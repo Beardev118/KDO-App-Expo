@@ -101,6 +101,7 @@ const navCalendarOptions = ({ navigation }) => {
           size={28}
           onPress={() => navigation.navigate("Event")}
         />
+
         <CalendarMenu />
       </View>
     )

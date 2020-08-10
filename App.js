@@ -4,6 +4,7 @@ import React from "react";
 import { View, Dimensions } from "react-native";
 import { name as appName } from "./app.json";
 import { COLOR, ThemeContext, getTheme } from "react-native-material-ui";
+import { MenuProvider } from "react-native-popup-menu";
 
 import AppStart from "./AppStart";
 import { GlobalState } from "./src/globalState/GlobalState";
@@ -25,9 +26,11 @@ export default function App() {
   return (
     <View style={{ flex: 1 }}>
       <ThemeContext.Provider value={getTheme(uiTheme)}>
-        <GlobalState>
-          <AppStart />
-        </GlobalState>
+        <MenuProvider>
+          <GlobalState>
+            <AppStart />
+          </GlobalState>
+        </MenuProvider>
       </ThemeContext.Provider>
     </View>
   );
