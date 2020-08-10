@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
   }
 });
 
-function CalendarMenu() {
+function EventMenu() {
   return (
     <Menu>
       <MenuTrigger>
@@ -50,36 +50,17 @@ function CalendarMenu() {
         </View>
       </MenuTrigger>
       <MenuOptions
-        optionsContainerStyle={{ marginTop: 60, paddingLeft: 8, width: 180 }}
+        optionsContainerStyle={{ marginTop: 60, paddingLeft: 8, width: 160 }}
       >
         {/* customStyles={optionsStyles} */}
-        <MenuOption onSelect={() => alert(`Save`)}>
-          <Text style={styles.optionText}>Editor Akcí</Text>
+        <MenuOption onSelect={() => alert(`Invite`)}>
+          <Text style={styles.optionText}>Pozvat na akci</Text>
         </MenuOption>
-        <MenuOption onSelect={() => alert(`Delete`)}>
-          <Text style={styles.optionText}>Profil</Text>
-        </MenuOption>
-        <MenuOption
-        //   onSelect={() => alert(`Not called`)}
-        //   disabled={true}
-        >
-          <View style={{ flexDirection: "row" }}>
-            <Text style={styles.optionText}>Zobrazit vše</Text>
-            <Switch
-              trackColor={{ false: "#767577", true: "#81b0ff" }}
-              thumbColor={{ false: "#f5dd4b", true: "#f4f3f4" }}
-              ios_backgroundColor="#3e3e3e"
-              //   onValueChange={toggleSwitch}
-              value={"false"}
-              style={{ marginLeft: 10 }}
-            />
-          </View>
-        </MenuOption>
-        <MenuOption>
-          <Text style={styles.optionText}>Zavřít</Text>
+        <MenuOption onSelect={() => alert(`ActionSetting`)}>
+          <Text style={styles.optionText}>Nastaveni</Text>
         </MenuOption>
       </MenuOptions>
     </Menu>
   );
 }
-export default CalendarMenu;
+export default EventMenu;

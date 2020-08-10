@@ -7,9 +7,8 @@ import { IconButton, Colors } from "react-native-paper";
 
 import Calendar from "./Calendar";
 import CalendarMenu from "../menu/CalendarMenu";
-// import { CalendarMenuState } from "../../globalState/CalendarMenuState";
-// import { CalendarMenuContext } from "../../globalState/CalendarMenuState";
 import Event from "./Event";
+import EventMenu from "../menu/EventMenu";
 import EventManager from "./EventManager";
 import Subject from "./Subject";
 
@@ -113,12 +112,7 @@ const navEventOptions = ({ navigation }) => {
     title: "Událost",
     headerRight: () => (
       <View style={styles.headerRightContainer}>
-        <IconButton
-          icon="dots-vertical"
-          color={Colors.white}
-          size={24}
-          onPress={() => navigation.navigate("Details")}
-        />
+        <EventMenu />
       </View>
     )
   };
