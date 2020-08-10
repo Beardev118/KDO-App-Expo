@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, Switch, StyleSheet } from "react-native";
+import { View, Text, Switch } from "react-native";
 import Menu, { MenuItem, MenuDivider } from "react-native-material-menu";
 import { IconButton, Colors } from "react-native-paper";
 
