@@ -14,6 +14,7 @@ import Subject from "./Subject";
 import Invite from "./Invite";
 import Profile from "./Profile";
 import ProfileMenu from "../menu/ProfileMenu";
+import Setting from "../navigationBar/Setting";
 
 const styles = StyleSheet.create({
   headerRightContainer: {
@@ -95,6 +96,13 @@ function NavBar() {
           component={Profile}
           options={navProfileOptions}
         />
+        <Stack.Screen
+          name="Setting"
+          component={Setting}
+          options={{
+            title: "Nastavení"
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
     // </CalendarMenuState>
@@ -113,7 +121,7 @@ const navCalendarOptions = ({ navigation }) => {
           icon="plus-circle-outline"
           color={Colors.white}
           size={28}
-          onPress={() => navigation.navigate("Profile")}
+          onPress={() => navigation.navigate("Setting")}
         />
         <CalendarMenu />
       </View>
