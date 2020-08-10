@@ -11,6 +11,7 @@ import Event from "./Event";
 import EventMenu from "../menu/EventMenu";
 import EventManager from "./EventManager";
 import Subject from "./Subject";
+import Invite from "./Invite";
 
 const styles = StyleSheet.create({
   headerRightContainer: {
@@ -80,6 +81,13 @@ function NavBar() {
             title: "Nová Skupina"
           }}
         />
+        <Stack.Screen
+          name="Invite"
+          component={Invite}
+          options={{
+            title: "Pozvánka"
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
     // </CalendarMenuState>
@@ -98,9 +106,8 @@ const navCalendarOptions = ({ navigation }) => {
           icon="plus-circle-outline"
           color={Colors.white}
           size={28}
-          onPress={() => navigation.navigate("Event")}
+          onPress={() => navigation.navigate("Invite")}
         />
-
         <CalendarMenu />
       </View>
     )
