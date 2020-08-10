@@ -12,6 +12,8 @@ import EventMenu from "../menu/EventMenu";
 import EventManager from "./EventManager";
 import Subject from "./Subject";
 import Invite from "./Invite";
+import Profile from "./Profile";
+import ProfileMenu from "../menu/ProfileMenu";
 
 const styles = StyleSheet.create({
   headerRightContainer: {
@@ -88,6 +90,11 @@ function NavBar() {
             title: "Pozvánka"
           }}
         />
+        <Stack.Screen
+          name="Profile"
+          component={Profile}
+          options={navProfileOptions}
+        />
       </Stack.Navigator>
     </NavigationContainer>
     // </CalendarMenuState>
@@ -106,7 +113,7 @@ const navCalendarOptions = ({ navigation }) => {
           icon="plus-circle-outline"
           color={Colors.white}
           size={28}
-          onPress={() => navigation.navigate("Invite")}
+          onPress={() => navigation.navigate("Profile")}
         />
         <CalendarMenu />
       </View>
@@ -120,6 +127,17 @@ const navEventOptions = ({ navigation }) => {
     headerRight: () => (
       <View style={styles.headerRightContainer}>
         <EventMenu />
+      </View>
+    )
+  };
+};
+
+const navProfileOptions = ({ navigation }) => {
+  return {
+    title: "Profil",
+    headerRight: () => (
+      <View style={styles.headerRightContainer}>
+        <ProfileMenu />
       </View>
     )
   };

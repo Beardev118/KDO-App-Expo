@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
   }
 });
 
-function EventMenu() {
+function ProfileMenu() {
   return (
     <Menu>
       <MenuTrigger>
@@ -53,14 +53,14 @@ function EventMenu() {
         optionsContainerStyle={{ marginTop: 60, paddingLeft: 8, width: 160 }}
       >
         {/* customStyles={optionsStyles} */}
-        <MenuOption onSelect={() => alert(`Invite`)}>
-          <Text style={styles.optionText}>Pozvat na akci</Text>
-        </MenuOption>
-        <MenuOption onSelect={() => alert(`ActionSetting`)}>
+        <MenuOption onSelect={() => alert(`Setting`)}>
           <Text style={styles.optionText}>Nastavení</Text>
+        </MenuOption>
+        <MenuOption onSelect={() => alert(`Logout`)}>
+          <Text style={styles.optionText}>Odhlásit</Text>
         </MenuOption>
       </MenuOptions>
     </Menu>
   );
 }
-export default EventMenu;
+export default ProfileMenu;
