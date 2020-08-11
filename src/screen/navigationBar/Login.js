@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
   }
 });
 
-function Login() {
+function Login({ navigation }) {
   const [phoneNumber, onChangePhoneNumber] = useState("777123456");
   const [authCode, onChangeAuthCode] = useState(" . . . . . . ");
 
@@ -119,7 +119,7 @@ function Login() {
         />
         <TouchableOpacity
           style={styles.authButton}
-          onPress={() => Alert.alert("Verify Auth code")}
+          onPress={() => navigation.navigate("Home")}
           underlayColor="#fff"
         >
           <Text style={styles.authText}>Ověřit kód</Text>

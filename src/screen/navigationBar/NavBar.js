@@ -2,9 +2,10 @@ import "react-native-gesture-handler";
 import React, { useContext, useState } from "react";
 import { StyleSheet, Text, View, Button } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
+import { createStackNavigator, Header } from "@react-navigation/stack";
 import { IconButton, Colors } from "react-native-paper";
 
+import Splash from "./Splash";
 import Calendar from "./Calendar";
 import CalendarMenu from "../menu/CalendarMenu";
 import Event from "./Event";
@@ -16,6 +17,8 @@ import Profile from "./Profile";
 import ProfileMenu from "../menu/ProfileMenu";
 import Setting from "../navigationBar/Setting";
 import Login from "../navigationBar/Login";
+
+import { SplashContext } from "../../globalState/SplashState";
 
 const styles = StyleSheet.create({
   headerRightContainer: {
@@ -44,13 +47,11 @@ function DetailsScreen({ navigation }) {
 const Stack = createStackNavigator();
 
 function NavBar() {
+  const [splashStatus, setSplashStatus] = useContext(SplashContext);
   return (
-    // <CalendarMenuState>
     <NavigationContainer style={{ flex: 1, flexDirection: "column" }}>
       <Stack.Navigator
-        // initialRouteName="Home"
-
-        initialRouteName="Login"
+        initialRouteName="Splash"
         screenOptions={{
           headerStyle: {
             backgroundColor: "#f4511e"
@@ -62,10 +63,18 @@ function NavBar() {
         }}
       >
         <Stack.Screen
+          name="Splash"
+          component={Splash}
+          options={{
+            headerShown: false
+          }}
+        />
+        <Stack.Screen
           name="Login"
           component={Login}
           options={{
-            title: "KDO PŘIJDE"
+            title: "KDO PŘIJDE",
+            headerLeft: null
           }}
         />
 
@@ -126,15 +135,16 @@ const navCalendarOptions = ({ navigation }) => {
   // );
   return {
     title: "Kalendář",
+    headerLeft: null,
     headerRight: () => (
       <View style={styles.headerRightContainer}>
         <IconButton
           icon="plus-circle-outline"
           color={Colors.white}
           size={28}
-          onPress={() => navigation.navigate("Setting")}
+          onPress={() => navigation.navigate("EventManager")}
         />
-        <CalendarMenu />
+        <CalendarMenu navigation={navigation} />
       </View>
     )
   };
@@ -156,7 +166,7 @@ const navProfileOptions = ({ navigation }) => {
     title: "Profil",
     headerRight: () => (
       <View style={styles.headerRightContainer}>
-        <ProfileMenu />
+        <ProfileMenu navigation={navigation} />
       </View>
     )
   };

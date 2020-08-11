@@ -1,5 +1,5 @@
-import 'react-native-gesture-handler';
-import React, {useState} from 'react';
+import "react-native-gesture-handler";
+import React, { useState } from "react";
 import {
   FlatList,
   StyleSheet,
@@ -11,136 +11,136 @@ import {
   Alert,
   Image,
   TouchableOpacity,
-  TextInput,
-} from 'react-native';
-import DropDownPicker from 'react-native-dropdown-picker';
-import Icon from 'react-native-vector-icons/Feather';
+  TextInput
+} from "react-native";
+import DropDownPicker from "react-native-dropdown-picker";
+import Icon from "react-native-vector-icons/Feather";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
+    flexDirection: "column",
+    justifyContent: "flex-start",
+    alignItems: "flex-start"
   },
   subContainer: {
-    flexDirection: 'row',
-    marginTop: 10,
+    flexDirection: "row",
+    marginTop: 10
   },
   textInputContainer: {
     flex: 0.65,
-    width: '100%',
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
+    width: "100%",
+    flexDirection: "column",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
     paddingVertical: 8,
-    paddingHorizontal: 10,
+    paddingHorizontal: 10
   },
   typeContainer: {
     flex: 0.35,
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
+    flexDirection: "column",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
     paddingVertical: 8,
-    paddingHorizontal: 10,
+    paddingHorizontal: 10
   },
   infoContainer: {
     flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
-    paddingHorizontal: 10,
+    flexDirection: "column",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    paddingHorizontal: 10
   },
   periodContainer: {
     flex: 0.26,
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    marginLeft: 10,
+    flexDirection: "column",
+    justifyContent: "flex-start",
+    marginLeft: 10
   },
   dayContainer: {
     flex: 0.26,
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    marginLeft: 10,
+    flexDirection: "column",
+    justifyContent: "flex-start",
+    marginLeft: 10
   },
   timeContainer: {
     flex: 0.22,
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    marginLeft: 10,
+    flexDirection: "column",
+    justifyContent: "flex-start",
+    marginLeft: 10
   },
   reminderContainer: {
     flex: 0.26,
     marginHorizontal: 10,
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
+    flexDirection: "column",
+    justifyContent: "flex-start"
   },
   btnView: {
     marginTop: 40,
-    alignSelf: 'stretch',
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignSelf: "stretch",
+    alignItems: "center",
+    justifyContent: "center"
   },
   btnUserGroup: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     width: 200,
     height: 56,
-    backgroundColor: '#27842A',
+    backgroundColor: "#27842A",
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#fff',
-    shadowColor: '#000',
+    borderColor: "#fff",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 2
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
 
-    elevation: 5,
+    elevation: 5
   },
   btnText: {
-    fontFamily: 'sans-serif-medium',
+    fontFamily: "sans-serif-medium",
     fontSize: 14,
-    fontWeight: 'bold',
-    color: 'white',
+    fontWeight: "bold",
+    color: "white"
   },
   subjectType: {
     paddingVertical: 2,
-    backgroundColor: '#FFF',
-    shadowColor: '#000',
+    backgroundColor: "#FFF",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 1,
+      height: 1
     },
     shadowOpacity: 0.22,
     shadowRadius: 2.22,
-    elevation: 3,
+    elevation: 3
   },
   subjectInfo: {
-    width: '100%',
+    width: "100%",
     height: 80,
     padding: 2,
     fontSize: 16,
-    backgroundColor: 'white',
+    backgroundColor: "white"
   },
   subLabel: {
     fontSize: 16,
     padding: 2,
-    color: '#6B6B6B',
+    color: "#6B6B6B"
   },
   valueText: {
-    textAlign: 'center',
-    textAlignVertical: 'center',
-    fontSize: 16,
-  },
+    textAlign: "center",
+    textAlignVertical: "center",
+    fontSize: 16
+  }
 });
 
 function Subject() {
-  const [valueSubjectName, onChangeSubjectName] = useState('');
-  const [valueSubjectInfo, onChangeSubjectInfo] = useState('');
-  const [country, setCountry] = useState('uk');
+  const [valueSubjectName, onChangeSubjectName] = useState("");
+  const [valueSubjectInfo, onChangeSubjectInfo] = useState("");
+  const [country, setCountry] = useState("Akce");
 
   return (
     <View style={styles.container}>
@@ -149,9 +149,9 @@ function Subject() {
           <Text style={styles.subLabel}>Název skupiny</Text>
           <TextInput
             style={{
-              width: '100%',
+              width: "100%",
               height: 40,
-              backgroundColor: 'white',
+              backgroundColor: "white"
             }}
             onChangeText={text => onChangeSubjectName(text)}
             value={valueSubjectName}
@@ -162,47 +162,48 @@ function Subject() {
           <DropDownPicker
             items={[
               {
-                label: 'Akce',
-                value: 'Akce',
+                label: "Akce",
+                value: "Akce"
                 // icon: () => <Icon name="flag" size={18} color="#900" />,
               },
               {
-                label: 'Sportovní',
-                value: 'Sportovní',
+                label: "Sportovní",
+                value: "Sportovní"
+
                 // icon: () => <Icon name="flag" size={18} color="#900" />,
               },
               {
-                label: 'Kulturní',
-                value: 'Kulturní',
+                label: "Kulturní",
+                value: "Kulturní"
               },
               {
-                label: 'Umělecká',
-                value: 'Umělecká',
+                label: "Umělecká",
+                value: "Umělecká"
               },
               {
-                label: 'Vzdělávací',
-                value: 'Vzdělávací',
+                label: "Vzdělávací",
+                value: "Vzdělávací"
               },
               {
-                label: 'Sociální',
-                value: 'Sociální',
+                label: "Sociální",
+                value: "Sociální"
               },
               {
-                label: 'Technická',
-                value: 'Technická',
+                label: "Technická",
+                value: "Technická"
               },
               {
-                label: 'Osobní',
-                value: 'Osobní',
-              },
+                label: "Osobní",
+                value: "Osobní"
+              }
             ]}
             defaultValue={country}
-            containerStyle={{width: '100%', height: 40}}
-            style={{width: '100%', backgroundColor: '#fafafa'}}
+            containerStyle={{ width: "100%", height: 40 }}
+            style={{ width: "100%", backgroundColor: "#fafafa" }}
             itemStyle={{
-              justifyContent: 'flex-start',
+              justifyContent: "flex-start"
             }}
-            dropDownStyle={{backgroundColor: '#fafafa'}}
+            dropDownStyle={{ backgroundColor: "#fafafa" }}
             onChangeItem={item => setCountry(item.value)}
           />
         </View>
@@ -230,8 +231,9 @@ function Subject() {
           <Text style={styles.subLabel}>Den</Text>
           <TouchableOpacity
             style={styles.subjectType}
-            onPress={() => Alert.alert('Simple Button pressed')}
-            underlayColor="#fff">
+            onPress={() => Alert.alert("Simple Button pressed")}
+            underlayColor="#fff"
+          >
             <Text style={styles.valueText}>Akce</Text>
           </TouchableOpacity>
         </View>
@@ -239,8 +241,9 @@ function Subject() {
           <Text style={styles.subLabel}>Čas</Text>
           <TouchableOpacity
             style={styles.subjectType}
-            onPress={() => Alert.alert('Simple Button pressed')}
-            underlayColor="#fff">
+            onPress={() => Alert.alert("Simple Button pressed")}
+            underlayColor="#fff"
+          >
             <Text style={styles.valueText}>Akce</Text>
           </TouchableOpacity>
         </View>
@@ -248,8 +251,9 @@ function Subject() {
           <Text style={styles.subLabel}>Připom.</Text>
           <TouchableOpacity
             style={styles.subjectType}
-            onPress={() => Alert.alert('Simple Button pressed')}
-            underlayColor="#fff">
+            onPress={() => Alert.alert("Simple Button pressed")}
+            underlayColor="#fff"
+          >
             <Text style={styles.valueText}>Akce</Text>
           </TouchableOpacity>
         </View>
@@ -257,8 +261,9 @@ function Subject() {
       <View style={styles.btnView}>
         <TouchableOpacity
           style={styles.btnUserGroup}
-          onPress={() => Alert.alert('AAAA')}
-          underlayColor="#fff">
+          onPress={() => Alert.alert("AAAA")}
+          underlayColor="#fff"
+        >
           <Text style={styles.btnText}>ZALOžIT NOVOU SKUPINU</Text>
         </TouchableOpacity>
       </View>

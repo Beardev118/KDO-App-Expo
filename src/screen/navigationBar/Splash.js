@@ -10,7 +10,7 @@ import {
   TouchableOpacity
 } from "react-native";
 
-import SplashImage from "../component/DisplaySplashImage";
+import SplashImage from "../../component/DisplaySplashImage";
 
 const window = Dimensions.get("window");
 const screen = Dimensions.get("screen");
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   }
 });
 
-const Splash = () => {
+const Splash = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.spaceText}></Text>
@@ -100,7 +100,7 @@ const Splash = () => {
       <View style={styles.btnView}>
         <TouchableOpacity
           style={styles.startScreenButton}
-          onPress={() => Alert.alert("Simple Button pressed")}
+          onPress={() => navigation.navigate("Login")}
           underlayColor="#fff"
         >
           <Text style={styles.startText}>START</Text>

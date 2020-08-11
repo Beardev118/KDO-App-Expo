@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
   }
 });
 
-function ProfileMenu() {
+function ProfileMenu(props) {
   return (
     <Menu>
       <MenuTrigger>
@@ -53,14 +53,15 @@ function ProfileMenu() {
         optionsContainerStyle={{ marginTop: 60, paddingLeft: 8, width: 160 }}
       >
         {/* customStyles={optionsStyles} */}
-        <MenuOption onSelect={() => alert(`Setting`)}>
+        <MenuOption onSelect={() => props.navigation.navigate("Setting")}>
           <Text style={styles.optionText}>Nastavení</Text>
         </MenuOption>
-        <MenuOption onSelect={() => alert(`Logout`)}>
+        <MenuOption onSelect={() => props.navigation.navigate("Login")}>
           <Text style={styles.optionText}>Odhlásit</Text>
         </MenuOption>
       </MenuOptions>
     </Menu>
   );
 }
+
 export default ProfileMenu;

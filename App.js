@@ -8,6 +8,7 @@ import { MenuProvider } from "react-native-popup-menu";
 
 import AppStart from "./AppStart";
 import { GlobalState } from "./src/globalState/GlobalState";
+import { SplashState } from "./src/globalState/SplashState";
 
 const uiTheme = {
   palette: {
@@ -46,9 +47,11 @@ export default function App() {
     <View style={{ flex: 1 }}>
       <ThemeContext.Provider value={getTheme(uiTheme)}>
         <MenuProvider>
-          <GlobalState>
-            <AppStart />
-          </GlobalState>
+          <SplashState>
+            <GlobalState>
+              <AppStart />
+            </GlobalState>
+          </SplashState>
         </MenuProvider>
       </ThemeContext.Provider>
     </View>

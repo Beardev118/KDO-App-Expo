@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
   }
 });
 
-function CalendarMenu() {
+function CalendarMenu(props) {
   return (
     <Menu>
       <MenuTrigger>
@@ -53,10 +53,10 @@ function CalendarMenu() {
         optionsContainerStyle={{ marginTop: 60, paddingLeft: 8, width: 180 }}
       >
         {/* customStyles={optionsStyles} */}
-        <MenuOption onSelect={() => alert(`Save`)}>
+        <MenuOption onSelect={() => props.navigation.navigate("EventManager")}>
           <Text style={styles.optionText}>Editor Akcí</Text>
         </MenuOption>
-        <MenuOption onSelect={() => alert(`Delete`)}>
+        <MenuOption onSelect={() => props.navigation.navigate("Profile")}>
           <Text style={styles.optionText}>Profil</Text>
         </MenuOption>
         <MenuOption
