@@ -15,6 +15,7 @@ import Invite from "./Invite";
 import Profile from "./Profile";
 import ProfileMenu from "../menu/ProfileMenu";
 import Setting from "../navigationBar/Setting";
+import Login from "../navigationBar/Login";
 
 const styles = StyleSheet.create({
   headerRightContainer: {
@@ -47,7 +48,9 @@ function NavBar() {
     // <CalendarMenuState>
     <NavigationContainer style={{ flex: 1, flexDirection: "column" }}>
       <Stack.Navigator
-        initialRouteName="Home"
+        // initialRouteName="Home"
+
+        initialRouteName="Login"
         screenOptions={{
           headerStyle: {
             backgroundColor: "#f4511e"
@@ -58,6 +61,14 @@ function NavBar() {
           // },
         }}
       >
+        <Stack.Screen
+          name="Login"
+          component={Login}
+          options={{
+            title: "KDO PŘIJDE"
+          }}
+        />
+
         <Stack.Screen
           name="Home"
           component={Calendar}
