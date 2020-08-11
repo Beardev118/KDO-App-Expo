@@ -9,6 +9,7 @@ import { MenuProvider } from "react-native-popup-menu";
 import AppStart from "./AppStart";
 import { GlobalState } from "./src/globalState/GlobalState";
 import { SplashState } from "./src/globalState/SplashState";
+import { MemberState } from "./src/globalState/MemberState";
 
 const uiTheme = {
   palette: {
@@ -23,35 +24,18 @@ const uiTheme = {
 
 const window = Dimensions.get("window");
 
-// const styles = StyleSheet.create({
-//   // container: {
-//   //   flexDirection: "column"
-//   // },
-//   // backdrop: {
-//   //   backgroundColor: "red",
-//   //   opacity: 0.5
-//   // },
-//   anchorStyle: {
-//     backgroundColor: "blue"
-//   }
-// });
-
-// const menuProviderStyles = {
-//   // menuProviderWrapper: styles.container,
-//   // backdrop: styles.backdrop
-
-// };
-
 export default function App() {
   return (
     <View style={{ flex: 1 }}>
       <ThemeContext.Provider value={getTheme(uiTheme)}>
         <MenuProvider>
-          <SplashState>
-            <GlobalState>
-              <AppStart />
-            </GlobalState>
-          </SplashState>
+          <MemberState>
+            <SplashState>
+              <GlobalState>
+                <AppStart />
+              </GlobalState>
+            </SplashState>
+          </MemberState>
         </MenuProvider>
       </ThemeContext.Provider>
     </View>

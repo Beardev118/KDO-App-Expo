@@ -15,8 +15,10 @@ import Subject from "./Subject";
 import Invite from "./Invite";
 import Profile from "./Profile";
 import ProfileMenu from "../menu/ProfileMenu";
-import Setting from "../navigationBar/Setting";
-import Login from "../navigationBar/Login";
+import Setting from "./Setting";
+import Login from "./Login";
+
+import Member from "../modalPages/Member";
 
 import { SplashContext } from "../../globalState/SplashState";
 
@@ -155,7 +157,7 @@ const navEventOptions = ({ navigation }) => {
     title: "Událost",
     headerRight: () => (
       <View style={styles.headerRightContainer}>
-        <EventMenu />
+        <EventMenu navigation={navigation} />
       </View>
     )
   };

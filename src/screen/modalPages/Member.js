@@ -1,0 +1,170 @@
+import React, { useState, useContext } from "react";
+import {
+  Alert,
+  Modal,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableHighlight,
+  TouchableOpacity,
+  View,
+  Slider,
+  Image
+} from "react-native";
+
+import { MemberContext } from "../../globalState/MemberState";
+
+function Member() {
+  const [modalMemberStatus, setModalMemberStatus] = useContext(MemberContext);
+  const [valueMessage, onChangeMessage] = useState("Možná");
+
+  return (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={modalMemberStatus}
+      onRequestClose={() => {
+        Alert.alert("Modal has been closed.");
+      }}
+    >
+      <View style={styles.centeredView}>
+        <View style={styles.modalView}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignSelf: "stretch"
+            }}
+          >
+            <Image
+              style={styles.imageUserAvatar}
+              source={require("../../../assets/badminton.png")}
+            />
+            <View
+              style={{
+                flexDirection: "column",
+                marginLeft: 16,
+                marginTop: 16,
+                justifyContent: "space-around"
+              }}
+            >
+              <Text style={styles.textUserName}>Na kolik procent?</Text>
+              <Text style={styles.textPhoneNumber}>771123212</Text>
+            </View>
+          </View>
+
+          <TouchableOpacity
+            style={styles.sendButton}
+            onPress={() => {
+              Alert.alert("SMS send");
+            }}
+          >
+            <Text style={styles.btnSendText}>Poslat zprávu</Text>
+          </TouchableOpacity>
+
+          <TextInput
+            multiline
+            numberOfLines={4}
+            style={styles.textInputMessage}
+            onChangeText={text => onChangeMessage(text)}
+            value={valueMessage}
+          />
+
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "flex-end",
+              alignSelf: "stretch",
+              paddingVertical: 16,
+              backgroundColor: "white"
+            }}
+          >
+            <View style={{ flex: 0.3 }}>
+              <TouchableOpacity
+                onPress={() => {
+                  setModalMemberStatus(!modalMemberStatus);
+                }}
+              >
+                <Text style={styles.textStyle}>CANCEL</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  centeredView: {
+    flex: 1,
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    backgroundColor: "rgba(0, 0, 0, 0.5)"
+  },
+  modalView: {
+    alignSelf: "stretch",
+    backgroundColor: "#E9E6DD",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5
+  },
+  textStyle: {
+    color: "#27842A",
+    textAlign: "center"
+  },
+  textUserName: {
+    fontSize: 22,
+    color: "#000",
+    textAlign: "center"
+  },
+  textPhoneNumber: {
+    fontSize: 24,
+    color: "#6B6B6B"
+  },
+  textInputMessage: {
+    padding: 4,
+    alignSelf: "stretch",
+    marginHorizontal: 20,
+    marginVertical: 8,
+    height: 125,
+    backgroundColor: "white",
+    fontSize: 18,
+    textAlignVertical: "top"
+  },
+  imageUserAvatar: {
+    width: 80,
+    height: 80,
+    marginTop: 16,
+    marginLeft: 16,
+    borderRadius: 40
+  },
+  btnSendText: {
+    fontSize: 12,
+    color: "#000",
+    backgroundColor: "#CECECE",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 3
+  },
+  sendButton: {
+    marginTop: 8,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    elevation: 4
+  }
+});
+
+export default Member;

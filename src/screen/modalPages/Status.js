@@ -40,7 +40,7 @@ function Status() {
             maximumValue={100}
             minimumValue={0}
             minimumTrackTintColor="#27842A"
-            maximumTrackTintColor="#000000"
+            maximumTrackTintColor="#27884B"
             thumbTintColor="#27842A"
             step={1}
             value={sliderValue}

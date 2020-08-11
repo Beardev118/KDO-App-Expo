@@ -99,7 +99,7 @@ const Item = ({ item, onPress, style }) => (
   </TouchableOpacity>
 );
 
-function Calendar() {
+function Calendar({ navigation }) {
   const [selectedId, setSelectedId] = useState(null);
   const [classes, setClasses] = useState([
     {
@@ -247,12 +247,15 @@ function Calendar() {
       eventBadge: "FNS"
     }
   ]);
-
+  const handleItemClick = item => {
+    navigation.navigate("Event");
+  };
   const renderItem = ({ item }) => {
     return (
       <Item
         item={item}
-        onPress={() => console.log(item.key)}
+        // onPress={() => console.log(item.key)}
+        onPress={() => handleItemClick(item)}
         style={styles.item}
       />
     );

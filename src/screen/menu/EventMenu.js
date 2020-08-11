@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
   }
 });
 
-function EventMenu() {
+function EventMenu(props) {
   return (
     <Menu>
       <MenuTrigger>
@@ -53,7 +53,7 @@ function EventMenu() {
         optionsContainerStyle={{ marginTop: 60, paddingLeft: 8, width: 160 }}
       >
         {/* customStyles={optionsStyles} */}
-        <MenuOption onSelect={() => alert(`Invite`)}>
+        <MenuOption onSelect={() => props.navigation.navigate("Invite")}>
           <Text style={styles.optionText}>Pozvat na akci</Text>
         </MenuOption>
         <MenuOption onSelect={() => alert(`ActionSetting`)}>
