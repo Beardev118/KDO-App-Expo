@@ -12,6 +12,7 @@ import {
   Image,
   TouchableOpacity
 } from "react-native";
+import { IconButton, Colors } from "react-native-paper";
 
 const styles = StyleSheet.create({
   headerRightContainer: {
@@ -31,11 +32,10 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     justifyContent: "flex-start",
-    alignItems: "center"
+    alignItems: "center",
+    height: 50
   },
   flContainer: {
-    marginVertical: 10,
-    marginHorizontal: 5,
     backgroundColor: "#FFF"
   },
   item: {
@@ -50,32 +50,53 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: "#CECECE"
   },
-  memberName: {
-    fontSize: 14,
+  eventName: {
+    fontSize: 20,
     fontWeight: "bold",
     textAlign: "left",
     textAlignVertical: "center",
     marginVertical: 8,
     padding: 3,
-    color: "#6B6B6B"
+    color: "#27842A",
+    height: 38,
+    marginStart: 8,
+    textDecorationLine: "underline"
   },
-  memberMsg: {
-    height: 24,
-    fontSize: 12,
-    textAlign: "left",
-    textAlignVertical: "center",
-    padding: 2,
-    color: "#6B6B6B"
-  },
-  memberNote: {
-    width: 70,
-    height: 44,
+  subEventName: {
+    // flex: 0.25,
     fontSize: 18,
     fontWeight: "bold",
+    textAlign: "left",
+    textAlignVertical: "center",
+    marginStart: 8,
+    color: "#6B6B6B",
+    width: 67
+  },
+  subEventPeriod: {
+    // flex: 0.25,
+    // width: 81,
+    marginStart: 5,
+    fontSize: 14,
+    textAlign: "left",
+    textAlignVertical: "center",
+    color: "#6B6B6B"
+  },
+  subEventDay: {
+    // flex: 0.25,
+    // width: 71,
+    fontSize: 14,
     color: "#6B6B6B",
     textAlign: "right",
     textAlignVertical: "center",
-    padding: 10
+    marginStart: 5
+  },
+  subEventTime: {
+    // flex: 0.25,
+    fontSize: 14,
+    color: "#6B6B6B",
+    textAlign: "right",
+    textAlignVertical: "center",
+    marginStart: 5
   },
   topBarContainer: {
     height: 42,
@@ -109,35 +130,61 @@ const styles = StyleSheet.create({
     color: "black"
   },
   btnFab: {
-    justifyContent: "center",
+    marginTop: -18,
+    marginStart: -18
+  },
+  btnText: {
+    color: "#fff",
+    fontSize: 60,
+    // paddingBottom: 5,
+    textAlign: "center",
+    textAlignVertical: "center"
+  },
+  btnView: {
+    width: 54,
+    height: 54,
+    backgroundColor: "#FFF",
+    position: "absolute",
+    bottom: 16,
+    end: 16,
+    borderRadius: 27,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+
+    elevation: 3
+  },
+  btnCreateEventView: {
+    margin: 8
+  },
+  btnCreateEvent: {
+    width: 130,
+    height: 32,
     alignItems: "center",
-    width: 56,
-    height: 56,
+    justifyContent: "center",
     backgroundColor: "#27842A",
-    borderRadius: 28,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: "#fff",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 2
+      height: 1
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-
-    elevation: 5
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3
   },
-  btnText: {
+  createEventText: {
     color: "#fff",
-    fontSize: 60,
-    paddingBottom: 5,
+    fontSize: 14,
+    fontWeight: "bold",
     textAlign: "center",
     textAlignVertical: "center"
-  },
-  btnView: {
-    margin: 20,
-    alignItems: "flex-end",
-    justifyContent: "flex-end"
   }
 });
 
@@ -150,13 +197,13 @@ const TopBar = () => (
 
 const BottomBar = props => (
   <View style={styles.btnView}>
-    <TouchableOpacity
-      style={styles.btnFab}
+    <IconButton
+      icon="plus-circle"
+      color="#27842A"
+      size={60}
       onPress={() => props.navigation.navigate("Subject")}
-      underlayColor="#fff"
-    >
-      <Text style={styles.btnText}>+</Text>
-    </TouchableOpacity>
+      style={styles.btnFab}
+    />
   </View>
 );
 
@@ -165,18 +212,11 @@ const Item = ({ item, onPress, style }) => (
     onPress={onPress}
     style={{ borderBottomColor: "#6B6B6B", borderBottomWidth: 1 }}
   >
-    <View key={item.key} style={styles.item}>
-      <View style={styles.subContainer}>
-        <Image
-          style={styles.memberAvartar}
-          source={require("../../../assets/badminton.png")}
-        />
-        <Text style={styles.memberName}>{item.textUserName}</Text>
-        <Text style={styles.memberMsg}>{item.textMsg}</Text>
-      </View>
-      <View>
-        <Text style={styles.memberNote}>{item.textNote}</Text>
-      </View>
+    <View key={item.key} style={styles.subContainer}>
+      <Text style={styles.subEventName}>{item.textEventName}</Text>
+      <Text style={styles.subEventPeriod}>tydne</Text>
+      <Text style={styles.subEventDay}>{item.textEventDay}</Text>
+      <Text style={styles.subEventTime}>{item.textEventTime}</Text>
     </View>
   </TouchableOpacity>
 );
@@ -187,47 +227,90 @@ function EventManager({ navigation }) {
     {
       avatarId: "test 01",
       key: "1",
-      textUserName: "test 01",
-      textMsg: "AAA",
-      textNote: "100%"
+      textEventName: "test 01",
+      textEventDay: "Pondělí",
+      textEventTime: "16:00"
     },
     {
       avatarId: "test 02",
       key: "2",
-      textUserName: "test 02",
-      textMsg: "AAA",
-      textNote: "30%"
+      textEventName: "test 02",
+      textEventDay: "Pondělí",
+      textEventTime: "16:00"
     },
     {
       avatarId: "test 03",
       key: "3",
-      textUserName: "test 03",
-      textMsg: "AAA",
-      textNote: "100%"
+      textEventName: "test 03",
+      textEventDay: "Pondělí",
+      textEventTime: "16:00"
     },
     {
       avatarId: "test 04",
       key: "4",
-      textUserName: "test 04",
-      textMsg: "AAAFADFASF",
-      textNote: "70%"
+      textEventName: "test 04",
+      textEventDay: "Pondělí",
+      textEventTime: "16:00"
     },
     {
       avatarId: "test 05",
       key: "5",
-      textUserName: "test 05",
-      textMsg: "AAA",
-      textNote: "50%"
+      textEventName: "test 05",
+      textEventDay: "Pondělí",
+      textEventTime: "16:00"
     }
   ]);
 
   const renderItem = ({ item }) => {
     return (
-      <Item
-        item={item}
-        onPress={() => console.log(item.key)}
-        style={styles.item}
-      />
+      <View
+        style={{
+          flex: 1,
+          flexDirection: "column",
+          borderBottomColor: "#6B6B6B",
+          borderBottomWidth: 1,
+          backgroundColor: "#E9E6DD"
+        }}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center"
+          }}
+        >
+          <TouchableOpacity onPress={() => console.log("A")}>
+            <Text style={styles.eventName}>{item.textEventName}</Text>
+          </TouchableOpacity>
+          <View style={styles.btnCreateEventView}>
+            <TouchableOpacity
+              style={styles.btnCreateEvent}
+              onPress={() => navigation.navigate("Login")}
+              underlayColor="#fff"
+            >
+              <Text style={styles.createEventText}>Přidat termín</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View
+          style={{
+            flexDirection: "column",
+            backgroundColor: "#FFF",
+            paddingTop: 8,
+            paddingBottom: 3,
+            paddingStart: 70,
+            paddingEnd: 8,
+            marginHorizontal: 8,
+            marginVertical: 4
+          }}
+        >
+          <Item
+            item={item}
+            onPress={() => console.log(item.key)}
+            style={styles.item}
+          />
+        </View>
+      </View>
     );
   };
 
