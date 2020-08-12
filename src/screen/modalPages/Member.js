@@ -16,6 +16,7 @@ import { MemberContext } from "../../globalState/MemberState";
 
 function Member() {
   const [modalMemberStatus, setModalMemberStatus] = useContext(MemberContext);
+
   const [valueMessage, onChangeMessage] = useState("Možná");
 
   return (

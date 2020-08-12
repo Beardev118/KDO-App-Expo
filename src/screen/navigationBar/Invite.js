@@ -164,7 +164,8 @@ function Invite() {
               backgroundColor: "#FFFDE7",
               padding: 4,
               borderRadius: 6,
-              marginTop: 4
+              marginTop: 4,
+              marginBottom: 8
             }}
           >
             <Text style={{ color: "#6B6B6B" }}>

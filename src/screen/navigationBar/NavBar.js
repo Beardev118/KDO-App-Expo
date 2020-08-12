@@ -18,7 +18,7 @@ import ProfileMenu from "../menu/ProfileMenu";
 import Setting from "./Setting";
 import Login from "./Login";
 
-import Member from "../modalPages/Member";
+import Day from "../modalPages/Day";
 
 import { SplashContext } from "../../globalState/SplashState";
 
@@ -53,7 +53,7 @@ function NavBar() {
   return (
     <NavigationContainer style={{ flex: 1, flexDirection: "column" }}>
       <Stack.Navigator
-        initialRouteName="Splash"
+        initialRouteName="Home"
         screenOptions={{
           headerStyle: {
             backgroundColor: "#f4511e"
@@ -64,6 +64,13 @@ function NavBar() {
           // },
         }}
       >
+        <Stack.Screen
+          name="Day"
+          component={Day}
+          options={{
+            headerShown: false
+          }}
+        />
         <Stack.Screen
           name="Splash"
           component={Splash}

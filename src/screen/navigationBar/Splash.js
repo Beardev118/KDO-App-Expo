@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     flex: 0.5
   },
   titleText: {
-    fontFamily: "sans-serif-medium",
+    // fontFamily: "sans-serif-medium",
     fontSize: 36,
     color: "black",
     textAlign: "center",
@@ -37,7 +37,6 @@ const styles = StyleSheet.create({
     textShadowRadius: 2
   },
   plainText: {
-    fontFamily: "sans-serif",
     fontSize: 18,
     fontStyle: "italic",
     textAlign: "center",

@@ -76,7 +76,6 @@ const styles = StyleSheet.create({
     width: 70,
     height: 44,
     fontSize: 18,
-    fontFamily: "sans-serif",
     fontWeight: "bold",
     color: "#6B6B6B",
     textAlign: "right",
@@ -190,14 +189,14 @@ const styles = StyleSheet.create({
   statusText: {
     color: "#000",
     textAlign: "center",
-    fontFamily: "sans-serif-medium",
+    // fontFamily: "sans-serif-medium",
     fontSize: 14,
     paddingLeft: 10,
     paddingRight: 10
   },
   btnText: {
     color: "#fff",
-    fontFamily: "sans-serif-medium",
+    // fontFamily: "sans-serif-medium",
     fontSize: 18,
     fontWeight: "bold",
     textAlign: "center",

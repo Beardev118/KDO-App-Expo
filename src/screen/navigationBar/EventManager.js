@@ -71,7 +71,6 @@ const styles = StyleSheet.create({
     width: 70,
     height: 44,
     fontSize: 18,
-    fontFamily: "sans-serif",
     fontWeight: "bold",
     color: "#6B6B6B",
     textAlign: "right",
