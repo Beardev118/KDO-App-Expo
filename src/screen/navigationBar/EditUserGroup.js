@@ -10,7 +10,9 @@ import {
   Alert,
   Image,
   TouchableOpacity,
-  TextInput
+  TextInput,
+  Keyboard,
+  TouchableWithoutFeedback
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import Icon from "react-native-vector-icons/Feather";
@@ -234,97 +236,99 @@ function EditUserGroup() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={{ ...styles.subContainer, zIndex: 5, elevation: 5 }}>
-        <View style={styles.textInputContainer}>
-          <Text style={styles.subLabel}>Název skupiny</Text>
-          <TextInput
-            style={{
-              width: "100%",
-              height: 40,
-              backgroundColor: "white"
-            }}
-            onChangeText={text => onChangeSubjectName(text)}
-            value={valueSubjectName}
-          />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={styles.container}>
+        <View style={{ ...styles.subContainer, zIndex: 5, elevation: 5 }}>
+          <View style={styles.textInputContainer}>
+            <Text style={styles.subLabel}>Název skupiny</Text>
+            <TextInput
+              style={{
+                width: "100%",
+                height: 40,
+                backgroundColor: "white"
+              }}
+              onChangeText={text => onChangeSubjectName(text)}
+              value={valueSubjectName}
+            />
+          </View>
+          <View style={styles.typeContainer}>
+            <Text style={styles.subLabel}>Typ</Text>
+            <DropDownPicker
+              items={[
+                { label: "Akce", value: "Akce" },
+                { label: "Sportovní", value: "Sportovní" },
+                { label: "Kulturní", value: "Kulturní" },
+                { label: "Umělecká", value: "Umělecká" },
+                { label: "Vzdělávací", value: "Vzdělávací" },
+                { label: "Sociální", value: "Sociální" },
+                { label: "Technická", value: "Technická" },
+                { label: "Osobní", value: "Osobní" }
+              ]}
+              defaultValue={country}
+              containerStyle={{
+                width: "100%",
+                height: 40,
+                zIndex: 5,
+                elevation: 5
+              }}
+              style={{
+                width: "100%",
+                backgroundColor: "#fafafa",
+                zIndex: 5,
+                elevation: 5
+              }}
+              itemStyle={{
+                justifyContent: "flex-start"
+              }}
+              dropDownStyle={{ backgroundColor: "#fafafa" }}
+              onChangeItem={item => setCountry(item.value)}
+            />
+          </View>
         </View>
-        <View style={styles.typeContainer}>
-          <Text style={styles.subLabel}>Typ</Text>
-          <DropDownPicker
-            items={[
-              { label: "Akce", value: "Akce" },
-              { label: "Sportovní", value: "Sportovní" },
-              { label: "Kulturní", value: "Kulturní" },
-              { label: "Umělecká", value: "Umělecká" },
-              { label: "Vzdělávací", value: "Vzdělávací" },
-              { label: "Sociální", value: "Sociální" },
-              { label: "Technická", value: "Technická" },
-              { label: "Osobní", value: "Osobní" }
-            ]}
-            defaultValue={country}
-            containerStyle={{
-              width: "100%",
-              height: 40,
-              zIndex: 5,
-              elevation: 5
-            }}
-            style={{
-              width: "100%",
-              backgroundColor: "#fafafa",
-              zIndex: 5,
-              elevation: 5
-            }}
-            itemStyle={{
-              justifyContent: "flex-start"
-            }}
-            dropDownStyle={{ backgroundColor: "#fafafa" }}
-            onChangeItem={item => setCountry(item.value)}
-          />
-        </View>
-      </View>
-      <View
-        style={{
-          flex: 1,
-          width: "100%",
-          zIndex: 0,
-          elevation: 0
-        }}
-      >
-        <View style={styles.infoContainer}>
-          <Text style={styles.subLabel}>Pozvaní / Členové</Text>
-          <FlatList
-            data={members}
-            renderItem={renderItem}
-            keyExtractor={item => item.key}
-            extraData={selectedId}
-            style={styles.flContainer}
-          />
-        </View>
-      </View>
-      <View style={styles.btnView}>
-        <TouchableOpacity
+        <View
           style={{
-            ...styles.btnUserGroup,
-            marginStart: 8,
-            backgroundColor: "#E65100"
+            flex: 1,
+            width: "100%",
+            zIndex: 0,
+            elevation: 0
           }}
-          onPress={() => Alert.alert("DeleteMember")}
-          underlayColor="#fff"
         >
-          <Text style={styles.btnText}>Odebrat položku</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{
-            ...styles.btnUserGroup,
-            marginEnd: 8
-          }}
-          onPress={() => Alert.alert("Add Member")}
-          underlayColor="#fff"
-        >
-          <Text style={styles.btnText}>Pozvat nového člena</Text>
-        </TouchableOpacity>
+          <View style={styles.infoContainer}>
+            <Text style={styles.subLabel}>Pozvaní / Členové</Text>
+            <FlatList
+              data={members}
+              renderItem={renderItem}
+              keyExtractor={item => item.key}
+              extraData={selectedId}
+              style={styles.flContainer}
+            />
+          </View>
+        </View>
+        <View style={styles.btnView}>
+          <TouchableOpacity
+            style={{
+              ...styles.btnUserGroup,
+              marginStart: 8,
+              backgroundColor: "#E65100"
+            }}
+            onPress={() => Alert.alert("DeleteMember")}
+            underlayColor="#fff"
+          >
+            <Text style={styles.btnText}>Odebrat položku</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              ...styles.btnUserGroup,
+              marginEnd: 8
+            }}
+            onPress={() => Alert.alert("Add Member")}
+            underlayColor="#fff"
+          >
+            <Text style={styles.btnText}>Pozvat nového člena</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 

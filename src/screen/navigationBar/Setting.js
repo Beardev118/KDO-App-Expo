@@ -5,7 +5,9 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Alert
+  Alert,
+  Keyboard,
+  TouchableWithoutFeedback
 } from "react-native";
 import { IconButton, Colors } from "react-native-paper";
 import * as Progress from "react-native-progress";
@@ -65,77 +67,81 @@ const styles = StyleSheet.create({
 });
 
 function Setting() {
-  const [message, onChangeMessage] = useState("Jméno");
+  const [message, onChangeMessage] = useState("");
 
   return (
-    <View style={styles.container}>
-      <View style={{ marginTop: 24, alignItems: "center" }}>
-        <Text style={{ color: "#6B6B6B", marginHorizontal: 8, fontSize: 14 }}>
-          KDO PŘIJDE
-        </Text>
-        <Text
-          style={{
-            color: "#6B6B6B",
-            marginHorizontal: 8,
-            marginTop: 16,
-            fontSize: 14
-          }}
-        >
-          Verze buildu
-        </Text>
-        <Text style={{ color: "#6B6B6B", marginTop: 16, fontSize: 14 }}>
-          Poslat zpětnou vazbu
-        </Text>
-      </View>
-      <View style={{ alignSelf: "stretch", marginTop: 8 }}>
-        <TextInput
-          multiline
-          numberOfLines={7}
-          style={styles.profileTextInput}
-          onChangeText={text => onChangeMessage(text)}
-          value={message}
-        />
-      </View>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={styles.container}>
+        <View style={{ marginTop: 24, alignItems: "center" }}>
+          <Text style={{ color: "#6B6B6B", marginHorizontal: 8, fontSize: 14 }}>
+            KDO PŘIJDE
+          </Text>
+          <Text
+            style={{
+              color: "#6B6B6B",
+              marginHorizontal: 8,
+              marginTop: 16,
+              fontSize: 14
+            }}
+          >
+            Verze buildu
+          </Text>
+          <Text style={{ color: "#6B6B6B", marginTop: 16, fontSize: 14 }}>
+            Poslat zpětnou vazbu
+          </Text>
+        </View>
+        <View style={{ alignSelf: "stretch", marginTop: 8 }}>
+          <TextInput
+            multiline
+            numberOfLines={7}
+            style={styles.profileTextInput}
+            onChangeText={text => onChangeMessage(text)}
+            value={message}
+            placeholder="Jméno"
+            placeholderTextColor="#969696"
+          />
+        </View>
 
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "flex-end"
-        }}
-      >
-        <TouchableOpacity
+        <View
           style={{
-            ...styles.profileScreenButton,
-            backgroundColor: "#FFF",
-            width: 160
+            flexDirection: "row",
+            justifyContent: "flex-end"
           }}
-          onPress={() => Alert.alert("send")}
-          underlayColor="#fff"
         >
-          <Text style={styles.btnText}>Poslat zprávu</Text>
-        </TouchableOpacity>
-      </View>
-      <View
-        style={{
-          flexDirection: "row",
-          marginHorizontal: 30,
-          marginTop: 28,
-          alignItems: "center",
-          justifyContent: "center"
-        }}
-      >
-        <TouchableOpacity
+          <TouchableOpacity
+            style={{
+              ...styles.profileScreenButton,
+              backgroundColor: "#FFF",
+              width: 160
+            }}
+            onPress={() => Alert.alert("send")}
+            underlayColor="#fff"
+          >
+            <Text style={styles.btnText}>Poslat zprávu</Text>
+          </TouchableOpacity>
+        </View>
+        <View
           style={{
-            ...styles.profileScreenButton,
-            backgroundColor: "#FFF"
+            flexDirection: "row",
+            marginHorizontal: 30,
+            marginTop: 28,
+            alignItems: "center",
+            justifyContent: "center"
           }}
-          onPress={() => Alert.alert("FCM")}
-          underlayColor="#fff"
         >
-          <Text style={styles.btnText}>Poslat testovací zprávu sobě</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              ...styles.profileScreenButton,
+              backgroundColor: "#FFF"
+            }}
+            onPress={() => Alert.alert("FCM")}
+            underlayColor="#fff"
+          >
+            <Text style={styles.btnText}>Poslat testovací zprávu sobě</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 

@@ -5,7 +5,9 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Alert
+  Alert,
+  Keyboard,
+  TouchableWithoutFeedback
 } from "react-native";
 import { IconButton, Colors } from "react-native-paper";
 import * as Progress from "react-native-progress";
@@ -65,82 +67,88 @@ const styles = StyleSheet.create({
 });
 
 function Profile() {
-  const [userName, onChangeUserName] = useState("Jméno");
-  const [phoneNumber, onChangePhoneNumber] = useState("Telefon");
+  const [userName, onChangeUserName] = useState("");
+  const [phoneNumber, onChangePhoneNumber] = useState("");
   return (
-    <View style={styles.container}>
-      <TouchableOpacity
-        style={styles.userImage}
-        onPress={() => Alert.alert("Simple Button pressed")}
-        underlayColor="#fff"
-      >
-        <IconButton
-          icon="camera"
-          color={Colors.gray}
-          size={50}
-          // onPress={this.showMenu}
-        />
-      </TouchableOpacity>
-      <View style={{ alignSelf: "stretch" }}>
-        <View style={styles.textInputContainer}>
-          <IconButton
-            icon="account"
-            color={Colors.black}
-            size={32}
-            // onPress={this.showMenu}
-          />
-          <TextInput
-            style={styles.profileTextInput}
-            onChangeText={text => onChangeUserName(text)}
-            value={userName}
-          />
-        </View>
-        <View style={{ ...styles.textInputContainer, marginTop: 32 }}>
-          <IconButton
-            icon="phone"
-            color={Colors.black}
-            size={32}
-            // onPress={this.showMenu}
-          />
-          <TextInput
-            style={styles.profileTextInput}
-            onChangeText={text => onChangePhoneNumber(text)}
-            value={phoneNumber}
-          />
-        </View>
-      </View>
-      <View
-        style={{
-          flexDirection: "row",
-          marginBottom: 88,
-          alignSelf: "stretch",
-          justifyContent: "space-around"
-        }}
-      >
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={styles.container}>
         <TouchableOpacity
-          style={{
-            ...styles.profileScreenButton,
-            marginTop: 8,
-            backgroundColor: "#FFF"
-          }}
-          onPress={() => Alert.alert("back")}
+          style={styles.userImage}
+          onPress={() => Alert.alert("Simple Button pressed")}
           underlayColor="#fff"
         >
-          <Text style={{ ...styles.btnText, color: "#969696" }}>Zpět</Text>
+          <IconButton
+            icon="camera"
+            color={Colors.gray}
+            size={50}
+            // onPress={this.showMenu}
+          />
         </TouchableOpacity>
-        <TouchableOpacity
+        <View style={{ alignSelf: "stretch" }}>
+          <View style={styles.textInputContainer}>
+            <IconButton
+              icon="account"
+              color={Colors.black}
+              size={32}
+              // onPress={this.showMenu}
+            />
+            <TextInput
+              style={styles.profileTextInput}
+              onChangeText={text => onChangeUserName(text)}
+              value={userName}
+              placeholder="Jméno"
+              placeholderTextColor="#969696"
+            />
+          </View>
+          <View style={{ ...styles.textInputContainer, marginTop: 32 }}>
+            <IconButton
+              icon="phone"
+              color={Colors.black}
+              size={32}
+              // onPress={this.showMenu}
+            />
+            <TextInput
+              style={styles.profileTextInput}
+              onChangeText={text => onChangePhoneNumber(text)}
+              value={phoneNumber}
+              placeholder="Telefon"
+              placeholderTextColor="#969696"
+            />
+          </View>
+        </View>
+        <View
           style={{
-            ...styles.profileScreenButton,
-            marginTop: 8,
-            backgroundColor: "#28742A"
+            flexDirection: "row",
+            marginBottom: 88,
+            alignSelf: "stretch",
+            justifyContent: "space-around"
           }}
-          onPress={() => Alert.alert("Save")}
-          underlayColor="#fff"
         >
-          <Text style={{ ...styles.btnText, color: "white" }}>Uložit</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              ...styles.profileScreenButton,
+              marginTop: 8,
+              backgroundColor: "#FFF"
+            }}
+            onPress={() => Alert.alert("back")}
+            underlayColor="#fff"
+          >
+            <Text style={{ ...styles.btnText, color: "#969696" }}>Zpět</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              ...styles.profileScreenButton,
+              marginTop: 8,
+              backgroundColor: "#28742A"
+            }}
+            onPress={() => Alert.alert("Save")}
+            underlayColor="#fff"
+          >
+            <Text style={{ ...styles.btnText, color: "white" }}>Uložit</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 

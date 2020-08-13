@@ -9,7 +9,9 @@ import {
   TouchableOpacity,
   View,
   Slider,
-  Image
+  Image,
+  Keyboard,
+  TouchableWithoutFeedback
 } from "react-native";
 
 import { MemberContext } from "../../globalState/MemberState";
@@ -28,69 +30,71 @@ function Member() {
         Alert.alert("Modal has been closed.");
       }}
     >
-      <View style={styles.centeredView}>
-        <View style={styles.modalView}>
-          <View
-            style={{
-              flexDirection: "row",
-              alignSelf: "stretch"
-            }}
-          >
-            <Image
-              style={styles.imageUserAvatar}
-              source={require("../../../assets/badminton.png")}
-            />
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
             <View
               style={{
-                flexDirection: "column",
-                marginLeft: 16,
-                marginTop: 16,
-                justifyContent: "space-around"
+                flexDirection: "row",
+                alignSelf: "stretch"
               }}
             >
-              <Text style={styles.textUserName}>Na kolik procent?</Text>
-              <Text style={styles.textPhoneNumber}>771123212</Text>
-            </View>
-          </View>
-
-          <TouchableOpacity
-            style={styles.sendButton}
-            onPress={() => {
-              Alert.alert("SMS send");
-            }}
-          >
-            <Text style={styles.btnSendText}>Poslat zprávu</Text>
-          </TouchableOpacity>
-
-          <TextInput
-            multiline
-            numberOfLines={4}
-            style={styles.textInputMessage}
-            onChangeText={text => onChangeMessage(text)}
-            value={valueMessage}
-          />
-
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "flex-end",
-              alignSelf: "stretch",
-              paddingVertical: 16,
-              backgroundColor: "white"
-            }}
-          >
-            <View style={{ flex: 0.3 }}>
-              <TouchableOpacity
-                onPress={() => {
-                  setModalMemberStatus(!modalMemberStatus);
+              <Image
+                style={styles.imageUserAvatar}
+                source={require("../../../assets/badminton.png")}
+              />
+              <View
+                style={{
+                  flexDirection: "column",
+                  marginLeft: 16,
+                  marginTop: 16,
+                  justifyContent: "space-around"
                 }}
               >
-                <Text style={styles.textStyle}>CANCEL</Text>
-              </TouchableOpacity>
+                <Text style={styles.textUserName}>Na kolik procent?</Text>
+                <Text style={styles.textPhoneNumber}>771123212</Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={styles.sendButton}
+              onPress={() => {
+                Alert.alert("SMS send");
+              }}
+            >
+              <Text style={styles.btnSendText}>Poslat zprávu</Text>
+            </TouchableOpacity>
+
+            <TextInput
+              multiline
+              numberOfLines={4}
+              style={styles.textInputMessage}
+              onChangeText={text => onChangeMessage(text)}
+              value={valueMessage}
+            />
+
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "flex-end",
+                alignSelf: "stretch",
+                paddingVertical: 16,
+                backgroundColor: "white"
+              }}
+            >
+              <View style={{ flex: 0.3 }}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setModalMemberStatus(!modalMemberStatus);
+                  }}
+                >
+                  <Text style={styles.textStyle}>CANCEL</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 }

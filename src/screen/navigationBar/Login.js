@@ -8,7 +8,9 @@ import {
   SafeAreaView,
   ScrollView,
   Alert,
-  Dimensions
+  Dimensions,
+  Keyboard,
+  TouchableWithoutFeedback
 } from "react-native";
 import { IconButton, Colors } from "react-native-paper";
 import * as Progress from "react-native-progress";
@@ -64,7 +66,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     fontSize: 30,
     fontWeight: "bold",
-    color: "#6B6B6B"
+    color: "#000"
   },
   backResendButton: {
     height: 44
@@ -75,64 +77,73 @@ const styles = StyleSheet.create({
 });
 
 function Login({ navigation }) {
-  const [phoneNumber, onChangePhoneNumber] = useState("777123456");
-  const [authCode, onChangeAuthCode] = useState(" . . . . . . ");
+  const [phoneNumber, onChangePhoneNumber] = useState("");
+  const [authCode, onChangeAuthCode] = useState("");
 
   return (
-    <ScrollView style={{ backgroundColor: "#E9E6DD" }}>
-      <SafeAreaView style={styles.container}>
-        <Text style={{ fontSize: 30, marginTop: 36, color: "#6B6B6B" }}>
-          Přihlášení
-        </Text>
-        <Text style={{ fontSize: 18, marginTop: 16, color: "#6B6B6B" }}>
-          Zadejte své telefonní číslo
-        </Text>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Text style={{ fontSize: 24, color: "#6B6B6B", fontWeight: "bold" }}>
-            +420
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <ScrollView style={{ backgroundColor: "#E9E6DD" }}>
+        <SafeAreaView style={styles.container}>
+          <Text style={{ fontSize: 30, marginTop: 36, color: "#6B6B6B" }}>
+            Přihlášení
           </Text>
+          <Text style={{ fontSize: 18, marginTop: 16, color: "#6B6B6B" }}>
+            Zadejte své telefonní číslo
+          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Text
+              style={{ fontSize: 24, color: "#6B6B6B", fontWeight: "bold" }}
+            >
+              +420
+            </Text>
+            <TextInput
+              style={{ ...styles.profileTextInput, width: 185 }}
+              onChangeText={text => onChangePhoneNumber(text)}
+              value={phoneNumber}
+              placeholder="777123456"
+              placeholderTextColor="#969696"
+              keyboardType="phone-pad"
+            />
+          </View>
+          <TouchableOpacity
+            style={styles.authButton}
+            onPress={() => Alert.alert("Simple Button pressed")}
+            underlayColor="#fff"
+          >
+            <Text style={styles.authText}>Přihlásit</Text>
+          </TouchableOpacity>
+          <Text style={{ marginTop: 16 }}>Firebase User ID: 123456789abc</Text>
+          <TouchableOpacity
+            style={{ ...styles.backResendButton, marginTop: 8 }}
+            onPress={() => Alert.alert("back")}
+            underlayColor="#fff"
+          >
+            <Text style={styles.backResendText}>Zpět</Text>
+          </TouchableOpacity>
           <TextInput
-            style={{ ...styles.profileTextInput, width: 185 }}
-            onChangeText={text => onChangePhoneNumber(text)}
-            value={phoneNumber}
+            style={{ ...styles.profileTextInput, width: 130 }}
+            onChangeText={text => onChangeAuthCode(text)}
+            value={authCode}
+            placeholder=" . . . . . . "
+            placeholderTextColor="#969696"
           />
-        </View>
-        <TouchableOpacity
-          style={styles.authButton}
-          onPress={() => Alert.alert("Simple Button pressed")}
-          underlayColor="#fff"
-        >
-          <Text style={styles.authText}>Přihlásit</Text>
-        </TouchableOpacity>
-        <Text style={{ marginTop: 16 }}>Firebase User ID: 123456789abc</Text>
-        <TouchableOpacity
-          style={{ ...styles.backResendButton, marginTop: 8 }}
-          onPress={() => Alert.alert("back")}
-          underlayColor="#fff"
-        >
-          <Text style={styles.backResendText}>Zpět</Text>
-        </TouchableOpacity>
-        <TextInput
-          style={{ ...styles.profileTextInput, width: 130 }}
-          onChangeText={text => onChangeAuthCode(text)}
-          value={authCode}
-        />
-        <TouchableOpacity
-          style={styles.authButton}
-          onPress={() => navigation.navigate("Home")}
-          underlayColor="#fff"
-        >
-          <Text style={styles.authText}>Ověřit kód</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{ ...styles.backResendButton, marginTop: 24 }}
-          onPress={() => Alert.alert("Resend Auth Code")}
-          underlayColor="#fff"
-        >
-          <Text style={styles.backResendText}>Poslat znovu</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
-    </ScrollView>
+          <TouchableOpacity
+            style={styles.authButton}
+            onPress={() => navigation.navigate("Home")}
+            underlayColor="#fff"
+          >
+            <Text style={styles.authText}>Ověřit kód</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{ ...styles.backResendButton, marginTop: 24 }}
+            onPress={() => Alert.alert("Resend Auth Code")}
+            underlayColor="#fff"
+          >
+            <Text style={styles.backResendText}>Poslat znovu</Text>
+          </TouchableOpacity>
+        </SafeAreaView>
+      </ScrollView>
+    </TouchableWithoutFeedback>
   );
 }
 
