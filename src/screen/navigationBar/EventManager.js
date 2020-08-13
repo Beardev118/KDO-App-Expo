@@ -279,7 +279,9 @@ function EventManager({ navigation }) {
             alignItems: "center"
           }}
         >
-          <TouchableOpacity onPress={() => console.log("A")}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("EditUserGroup")}
+          >
             <Text style={styles.eventName}>{item.textEventName}</Text>
           </TouchableOpacity>
           <View style={styles.btnCreateEventView}>

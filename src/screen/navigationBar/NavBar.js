@@ -1,6 +1,6 @@
 import "react-native-gesture-handler";
 import React, { useContext, useState } from "react";
-import { StyleSheet, Text, View, Button } from "react-native";
+import { StyleSheet, Text, View, Button, TouchableOpacity } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator, Header } from "@react-navigation/stack";
 import { IconButton, Colors } from "react-native-paper";
@@ -17,10 +17,12 @@ import Profile from "./Profile";
 import ProfileMenu from "../menu/ProfileMenu";
 import Setting from "./Setting";
 import Login from "./Login";
+import EditUserGroup from "./EditUserGroup";
 
 import Day from "../modalPages/Day";
 
 import { SplashContext } from "../../globalState/SplashState";
+import EditUserGroupMenu from "../menu/EditUserGroupMenu";
 
 const styles = StyleSheet.create({
   headerRightContainer: {
@@ -132,6 +134,12 @@ function NavBar() {
             title: "Nastavení"
           }}
         />
+
+        <Stack.Screen
+          name="EditUserGroup"
+          component={EditUserGroup}
+          options={navEditUserGroupOptions}
+        />
       </Stack.Navigator>
     </NavigationContainer>
     // </CalendarMenuState>
@@ -165,6 +173,29 @@ const navEventOptions = ({ navigation }) => {
     headerRight: () => (
       <View style={styles.headerRightContainer}>
         <EventMenu navigation={navigation} />
+      </View>
+    )
+  };
+};
+
+const navEditUserGroupOptions = ({ navigation }) => {
+  return {
+    title: "Editace Skupiny",
+    headerRight: () => (
+      <View style={styles.headerRightContainer}>
+        <TouchableOpacity
+          style={{
+            width: 44,
+            height: 44,
+            justifyContent: "center",
+            alignItems: "center"
+          }}
+          onPress={() => alert("Save")}
+          underlayColor="#fff"
+        >
+          <Text style={{ fontSize: 14, color: "white" }}>Uložit</Text>
+        </TouchableOpacity>
+        <EditUserGroupMenu navigation={navigation} />
       </View>
     )
   };
