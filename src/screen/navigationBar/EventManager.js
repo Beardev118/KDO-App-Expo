@@ -13,6 +13,7 @@ import {
   TouchableOpacity
 } from "react-native";
 import { IconButton, Colors } from "react-native-paper";
+import EditTerm from "./EditTerm";
 
 const styles = StyleSheet.create({
   headerRightContainer: {
@@ -287,7 +288,7 @@ function EventManager({ navigation }) {
           <View style={styles.btnCreateEventView}>
             <TouchableOpacity
               style={styles.btnCreateEvent}
-              onPress={() => navigation.navigate("Login")}
+              onPress={() => navigation.navigate("NewTerm")}
               underlayColor="#fff"
             >
               <Text style={styles.createEventText}>Přidat termín</Text>
@@ -308,7 +309,7 @@ function EventManager({ navigation }) {
         >
           <Item
             item={item}
-            onPress={() => console.log(item.key)}
+            onPress={() => navigation.navigate("EditTerm")}
             style={styles.item}
           />
         </View>

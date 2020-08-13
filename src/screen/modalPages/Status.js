@@ -99,8 +99,8 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
-    backgroundColor: "rgba(0, 0, 0, 0.5)"
+    padding: 20
+    // backgroundColor: "rgba(0, 0, 0, 0.5)"
   },
   modalView: {
     alignSelf: "stretch",

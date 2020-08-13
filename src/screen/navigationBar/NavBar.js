@@ -18,9 +18,10 @@ import ProfileMenu from "../menu/ProfileMenu";
 import Setting from "./Setting";
 import Login from "./Login";
 import EditUserGroup from "./EditUserGroup";
-
+import NewTerm from "./NewTerm";
+import EditTerm from "./EditTerm";
+import EditTermMenu from "../menu/EditTermMenu";
 import Day from "../modalPages/Day";
-
 import { SplashContext } from "../../globalState/SplashState";
 import EditUserGroupMenu from "../menu/EditUserGroupMenu";
 
@@ -55,7 +56,7 @@ function NavBar() {
   return (
     <NavigationContainer style={{ flex: 1, flexDirection: "column" }}>
       <Stack.Navigator
-        initialRouteName="Home"
+        initialRouteName="Splash"
         screenOptions={{
           headerStyle: {
             backgroundColor: "#f4511e"
@@ -140,6 +141,16 @@ function NavBar() {
           component={EditUserGroup}
           options={navEditUserGroupOptions}
         />
+        <Stack.Screen
+          name="NewTerm"
+          component={NewTerm}
+          options={{ title: "Nový Termín" }}
+        />
+        <Stack.Screen
+          name="EditTerm"
+          component={EditTerm}
+          options={navEditTermOptions}
+        />
       </Stack.Navigator>
     </NavigationContainer>
     // </CalendarMenuState>
@@ -196,6 +207,29 @@ const navEditUserGroupOptions = ({ navigation }) => {
           <Text style={{ fontSize: 14, color: "white" }}>Uložit</Text>
         </TouchableOpacity>
         <EditUserGroupMenu navigation={navigation} />
+      </View>
+    )
+  };
+};
+
+const navEditTermOptions = ({ navigation }) => {
+  return {
+    title: "Editace Termínu",
+    headerRight: () => (
+      <View style={styles.headerRightContainer}>
+        <TouchableOpacity
+          style={{
+            width: 44,
+            height: 44,
+            justifyContent: "center",
+            alignItems: "center"
+          }}
+          onPress={() => alert("Save")}
+          underlayColor="#fff"
+        >
+          <Text style={{ fontSize: 14, color: "white" }}>Uložit</Text>
+        </TouchableOpacity>
+        <EditTermMenu navigation={navigation} />
       </View>
     )
   };
