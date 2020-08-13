@@ -11,6 +11,7 @@ import {
   Keyboard,
   TouchableWithoutFeedback
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 import { GlobalContext } from "../../globalState/GlobalState";
 
@@ -34,64 +35,71 @@ function Status() {
       }}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Text style={styles.textPercent}>Na kolik procent?</Text>
-            <Text style={styles.valuePercent}>{sliderValueText}</Text>
+        <KeyboardAwareScrollView
+          // style={{ backgroundColor: "#E9E6DD" }}
+          resetScrollToCoords={{ x: 0, y: 0 }}
+          contentContainerStyle={styles.centeredView}
+          scrollEnabled={false}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={styles.textPercent}>Na kolik procent?</Text>
+              <Text style={styles.valuePercent}>{sliderValueText}</Text>
 
-            <Slider
-              maximumValue={100}
-              minimumValue={0}
-              minimumTrackTintColor="#27842A"
-              maximumTrackTintColor="#000000"
-              thumbTintColor="#27842A"
-              step={1}
-              value={sliderValue}
-              onValueChange={sliderValue => setSlider(sliderValue)}
-              style={{ width: 250, height: 40 }}
-            />
+              <Slider
+                maximumValue={100}
+                minimumValue={0}
+                minimumTrackTintColor="#27842A"
+                maximumTrackTintColor="#000000"
+                thumbTintColor="#27842A"
+                step={1}
+                value={sliderValue}
+                onValueChange={sliderValue => setSlider(sliderValue)}
+                style={{ width: 250, height: 40 }}
+              />
 
-            <TextInput
-              multiline
-              numberOfLines={4}
-              style={styles.textInputMessage}
-              onChangeText={text => onChangeMessage(text)}
-              value={valueMessage}
-            />
+              <TextInput
+                multiline
+                numberOfLines={4}
+                style={styles.textInputMessage}
+                onChangeText={text => onChangeMessage(text)}
+                value={valueMessage}
+              />
 
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "flex-end",
-                alignSelf: "stretch",
-                paddingVertical: 16,
-                backgroundColor: "white"
-              }}
-            >
-              <View style={{ flex: 0.3, fontSize: 16 }}>
-                <TouchableOpacity
-                  // style={{ ...styles.openButton  }}
-                  onPress={() => {
-                    setModalStatus(!modalStatus);
-                  }}
-                >
-                  <Text style={styles.textStyle}>Zrušit</Text>
-                </TouchableOpacity>
-              </View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "flex-end",
+                  alignSelf: "stretch",
+                  paddingVertical: 16,
+                  backgroundColor: "white"
+                }}
+              >
+                <View style={{ flex: 0.3, fontSize: 16 }}>
+                  <TouchableOpacity
+                    // style={{ ...styles.openButton  }}
+                    onPress={() => {
+                      setModalStatus(!modalStatus);
+                    }}
+                  >
+                    <Text style={styles.textStyle}>Zrušit</Text>
+                  </TouchableOpacity>
+                </View>
 
-              <View style={{ flex: 0.2 }}>
-                <TouchableOpacity
-                  // style={{ ...styles.openButton, flex: 0.2 }}
-                  onPress={() => {
-                    setModalStatus(!modalStatus);
-                  }}
-                >
-                  <Text style={styles.textStyle}>OK</Text>
-                </TouchableOpacity>
+                <View style={{ flex: 0.2 }}>
+                  <TouchableOpacity
+                    // style={{ ...styles.openButton, flex: 0.2 }}
+                    onPress={() => {
+                      setModalStatus(!modalStatus);
+                    }}
+                  >
+                    <Text style={styles.textStyle}>OK</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           </View>
-        </View>
+        </KeyboardAwareScrollView>
       </TouchableWithoutFeedback>
     </Modal>
   );

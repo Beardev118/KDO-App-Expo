@@ -14,6 +14,7 @@ import {
   Keyboard,
   TouchableWithoutFeedback
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import DropDownPicker from "react-native-dropdown-picker";
 import Icon from "react-native-vector-icons/Feather";
 import CheckBox from "react-native-check-box";
@@ -237,7 +238,13 @@ function EditUserGroup() {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View style={styles.container}>
+      <KeyboardAwareScrollView
+        // style={{ backgroundColor: "#E9E6DD" }}
+        resetScrollToCoords={{ x: 0, y: 0 }}
+        contentContainerStyle={styles.container}
+        scrollEnabled={false}
+      >
+        {/* <View style={styles.container}> */}
         <View style={{ ...styles.subContainer, zIndex: 5, elevation: 5 }}>
           <View style={styles.textInputContainer}>
             <Text style={styles.subLabel}>Název skupiny</Text>
@@ -327,7 +334,8 @@ function EditUserGroup() {
             <Text style={styles.btnText}>Pozvat nového člena</Text>
           </TouchableOpacity>
         </View>
-      </View>
+        {/* </View> */}
+      </KeyboardAwareScrollView>
     </TouchableWithoutFeedback>
   );
 }

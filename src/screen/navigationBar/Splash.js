@@ -18,7 +18,7 @@ const screen = Dimensions.get("screen");
 const styles = StyleSheet.create({
   container: {
     flexDirection: "column",
-    alignItems: "stretch",
+    alignItems: "center",
     height: window.height,
     width: window.width,
     backgroundColor: "#E9E6DD"
@@ -37,6 +37,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 2
   },
   plainText: {
+    alignSelf: "stretch",
     fontSize: 18,
     fontStyle: "italic",
     textAlign: "center",
@@ -44,10 +45,8 @@ const styles = StyleSheet.create({
     height: 60,
     backgroundColor: "white",
     borderRadius: 8,
-    marginLeft: 24,
-    marginTop: 12,
-    marginRight: 24,
-    marginBottom: 12,
+    marginHorizontal: 24,
+    marginVertical: 12,
     shadowColor: "#000",
     shadowOffset: {
       width: 3,
@@ -55,7 +54,6 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.29,
     shadowRadius: 4.65,
-
     elevation: 7
   },
   startScreenButton: {
