@@ -37,6 +37,8 @@ const styles = StyleSheet.create({
 });
 
 function CalendarMenu(props) {
+  const [isEnabled, setIsEnabled] = useState(false);
+  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
   return (
     <Menu>
       <MenuTrigger>
@@ -69,8 +71,8 @@ function CalendarMenu(props) {
               trackColor={{ false: "#767577", true: "#81b0ff" }}
               thumbColor={{ false: "#f5dd4b", true: "#f4f3f4" }}
               ios_backgroundColor="#3e3e3e"
-              //   onValueChange={toggleSwitch}
-              value={"false"}
+              onValueChange={toggleSwitch}
+              value={isEnabled}
               style={{ marginLeft: 10 }}
             />
           </View>

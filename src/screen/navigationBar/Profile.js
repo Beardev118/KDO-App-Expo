@@ -14,6 +14,8 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { IconButton, Colors } from "react-native-paper";
 import * as Progress from "react-native-progress";
 
+import UserImagePicker from "./profile/UserImagePicker";
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -52,25 +54,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center"
   },
-  userImage: {
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    borderWidth: 1,
-    borderColor: "#6B6B6B",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 32
-  },
   btnText: {
     fontSize: 14,
     textAlignVertical: "center"
   }
 });
 
-function Profile() {
+function Profile({ navigation }) {
   const [userName, onChangeUserName] = useState("");
   const [phoneNumber, onChangePhoneNumber] = useState("");
+
+  const onSaveProfile = () => {
+    navigation.goBack();
+  };
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <KeyboardAwareScrollView
@@ -81,18 +77,8 @@ function Profile() {
       >
         <ScrollView style={{ width: "100%" }}>
           <View style={styles.container}>
-            <TouchableOpacity
-              style={styles.userImage}
-              onPress={() => Alert.alert("Simple Button pressed")}
-              underlayColor="#fff"
-            >
-              <IconButton
-                icon="camera"
-                color={Colors.gray}
-                size={50}
-                // onPress={this.showMenu}
-              />
-            </TouchableOpacity>
+            <UserImagePicker />
+
             <View style={{ alignSelf: "stretch" }}>
               <View style={styles.textInputContainer}>
                 <IconButton
@@ -139,7 +125,7 @@ function Profile() {
                   marginTop: 8,
                   backgroundColor: "#FFF"
                 }}
-                onPress={() => Alert.alert("back")}
+                onPress={() => navigation.goBack()}
                 underlayColor="#fff"
               >
                 <Text style={{ ...styles.btnText, color: "#969696" }}>
@@ -152,7 +138,7 @@ function Profile() {
                   marginTop: 8,
                   backgroundColor: "#28742A"
                 }}
-                onPress={() => Alert.alert("Save")}
+                onPress={onSaveProfile}
                 underlayColor="#fff"
               >
                 <Text style={{ ...styles.btnText, color: "white" }}>

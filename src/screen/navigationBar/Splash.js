@@ -10,6 +10,8 @@ import {
   TouchableOpacity
 } from "react-native";
 import { firebase } from "../../firebase/config";
+import database from "@firebase/database";
+import firestore from "@firebase/firestore";
 
 import SplashImage from "../../component/DisplaySplashImage";
 
@@ -94,7 +96,6 @@ const Splash = ({ navigation }) => {
     firebase.auth().onAuthStateChanged(user => {
       if (user != null) {
         setAuthUser(user);
-        console.log("XTTT ", user);
         navigation.navigate("Home");
       } else {
         navigation.navigate("Login");

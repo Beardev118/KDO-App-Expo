@@ -95,7 +95,6 @@ function Login({ navigation }) {
       phoneProvider
         .verifyPhoneNumber(phoneNumber, recaptchaVerifier.current)
         .then(function(confirmationResult) {
-          console.log("AA", confirmationResult);
           setVerificationId(confirmationResult);
           setShowBack(true);
           setShowAuth(true);
@@ -103,6 +102,18 @@ function Login({ navigation }) {
         .catch(function(error) {
           setShowAuth(false);
           setShowBack(true);
+        });
+    }
+  };
+
+  const resendVerification = () => {
+    if (phoneNumber != "") {
+      const phoneProvider = new firebase.auth.PhoneAuthProvider();
+      phoneProvider
+        .verifyPhoneNumber(phoneNumber, recaptchaVerifier.current)
+        .then(function(confirmationResult) {
+          onChangeAuthCode("");
+          setVerificationId(confirmationResult);
         });
     }
   };
@@ -117,7 +128,6 @@ function Login({ navigation }) {
   // Function to be called when confirming the verification code that we received
   // from Firebase via SMS
   const confirmCode = () => {
-    console.log("BB", verificationId);
     const credential = firebase.auth.PhoneAuthProvider.credential(
       verificationId,
       authCode
@@ -127,9 +137,6 @@ function Login({ navigation }) {
       .signInWithCredential(credential)
       .then(result => {
         // Do something with the results here
-        console.log(result);
-        var aaA = firebase.auth().currentUser;
-        console.log("aaA", aaA);
         navigation.navigate("Home");
       });
   };
@@ -207,7 +214,7 @@ function Login({ navigation }) {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={{ ...styles.backResendButton, marginTop: 24 }}
-                  onPress={() => navigation.navigate("Home")}
+                  onPress={resendVerification}
                   underlayColor="#fff"
                 >
                   <Text style={styles.backResendText}>Poslat znovu</Text>
