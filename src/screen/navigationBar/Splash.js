@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   StyleSheet,
@@ -9,6 +9,7 @@ import {
   Dimensions,
   TouchableOpacity
 } from "react-native";
+import { firebase } from "../../firebase/config";
 
 import SplashImage from "../../component/DisplaySplashImage";
 
@@ -87,6 +88,20 @@ const styles = StyleSheet.create({
 });
 
 const Splash = ({ navigation }) => {
+  const [authUser, setAuthUser] = useState(null);
+
+  const Login = () => {
+    firebase.auth().onAuthStateChanged(user => {
+      if (user != null) {
+        setAuthUser(user);
+        console.log("XTTT ", user);
+        navigation.navigate("Home");
+      } else {
+        navigation.navigate("Login");
+      }
+    });
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.spaceText}></Text>
@@ -97,7 +112,7 @@ const Splash = ({ navigation }) => {
       <View style={styles.btnView}>
         <TouchableOpacity
           style={styles.startScreenButton}
-          onPress={() => navigation.navigate("Login")}
+          onPress={Login}
           underlayColor="#fff"
         >
           <Text style={styles.startText}>START</Text>

@@ -128,6 +128,8 @@ function Login({ navigation }) {
       .then(result => {
         // Do something with the results here
         console.log(result);
+        var aaA = firebase.auth().currentUser;
+        console.log("aaA", aaA);
         navigation.navigate("Home");
       });
   };

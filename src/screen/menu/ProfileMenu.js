@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, Switch, StyleSheet } from "react-native";
-// import Menu, { MenuItem, MenuDivider } from "react-native-material-menu";
+import { firebase } from "../../firebase/config";
 import { IconButton, Colors } from "react-native-paper";
 
 import {
@@ -37,6 +37,10 @@ const styles = StyleSheet.create({
 });
 
 function ProfileMenu(props) {
+  const Logout = () => {
+    firebase.auth().signOut();
+    props.navigation.navigate("Login");
+  };
   return (
     <Menu>
       <MenuTrigger>
@@ -56,7 +60,7 @@ function ProfileMenu(props) {
         <MenuOption onSelect={() => props.navigation.navigate("Setting")}>
           <Text style={styles.optionText}>Nastavení</Text>
         </MenuOption>
-        <MenuOption onSelect={() => props.navigation.navigate("Login")}>
+        <MenuOption onSelect={Logout}>
           <Text style={styles.optionText}>Odhlásit</Text>
         </MenuOption>
       </MenuOptions>
