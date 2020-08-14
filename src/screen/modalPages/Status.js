@@ -25,6 +25,7 @@ function Status() {
     setSliderValue(value);
     setSliderValueText(value.toString() + "%");
   };
+
   return (
     <Modal
       animationType="slide"

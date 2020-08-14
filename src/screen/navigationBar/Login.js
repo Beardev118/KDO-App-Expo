@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -16,6 +16,8 @@ import {
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { IconButton, Colors } from "react-native-paper";
 import * as Progress from "react-native-progress";
+import { firebase } from "../../firebase/config";
+import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 
 const window = Dimensions.get("screen");
 
@@ -81,6 +83,54 @@ const styles = StyleSheet.create({
 function Login({ navigation }) {
   const [phoneNumber, onChangePhoneNumber] = useState("");
   const [authCode, onChangeAuthCode] = useState("");
+  const [verificationId, setVerificationId] = useState(null);
+  const recaptchaVerifier = useRef(null);
+  const [showAuth, setShowAuth] = useState(false);
+  const [showBack, setShowBack] = useState(false);
+
+  // Function to be called when requesting for a verification code
+  const sendVerification = () => {
+    if (phoneNumber != "") {
+      const phoneProvider = new firebase.auth.PhoneAuthProvider();
+      phoneProvider
+        .verifyPhoneNumber(phoneNumber, recaptchaVerifier.current)
+        .then(function(confirmationResult) {
+          console.log("AA", confirmationResult);
+          setVerificationId(confirmationResult);
+          setShowBack(true);
+          setShowAuth(true);
+        })
+        .catch(function(error) {
+          setShowAuth(false);
+          setShowBack(true);
+        });
+    }
+  };
+
+  const initVerification = () => {
+    setShowAuth(false);
+    setShowBack(false);
+    onChangePhoneNumber("");
+    onChangeAuthCode("");
+  };
+
+  // Function to be called when confirming the verification code that we received
+  // from Firebase via SMS
+  const confirmCode = () => {
+    console.log("BB", verificationId);
+    const credential = firebase.auth.PhoneAuthProvider.credential(
+      verificationId,
+      authCode
+    );
+    firebase
+      .auth()
+      .signInWithCredential(credential)
+      .then(result => {
+        // Do something with the results here
+        console.log(result);
+        navigation.navigate("Home");
+      });
+  };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -116,46 +166,58 @@ function Login({ navigation }) {
             </View>
             <TouchableOpacity
               style={styles.authButton}
-              onPress={() => Alert.alert("Simple Button pressed")}
+              // onPress={sendVerification}
+              onPress={sendVerification}
               underlayColor="#fff"
             >
               <Text style={styles.authText}>Přihlásit</Text>
             </TouchableOpacity>
-            <Text style={{ marginTop: 16 }}>
-              Firebase User ID: 123456789abc
-            </Text>
-            <TouchableOpacity
-              style={{ ...styles.backResendButton, marginTop: 8 }}
-              onPress={() => Alert.alert("back")}
-              underlayColor="#fff"
-            >
-              <Text style={styles.backResendText}>Zpět</Text>
-            </TouchableOpacity>
+            {showBack ? (
+              <View style={{ alignItems: "center", flex: 1, width: "100%" }}>
+                <Text style={{ marginTop: 16 }}>
+                  {showAuth ? "Kód odeslán" : "Chyba ověření"}
+                </Text>
+                <TouchableOpacity
+                  style={{ ...styles.backResendButton, marginTop: 8 }}
+                  onPress={initVerification}
+                  underlayColor="#fff"
+                >
+                  <Text style={styles.backResendText}>Zpět</Text>
+                </TouchableOpacity>
+              </View>
+            ) : null}
+            {showAuth ? (
+              <View style={{ alignItems: "center", flex: 1, width: "100%" }}>
+                <TextInput
+                  style={{ ...styles.profileTextInput, width: 130 }}
+                  onChangeText={text => onChangeAuthCode(text)}
+                  value={authCode}
+                  placeholder=" . . . . . . "
+                  placeholderTextColor="#969696"
+                />
 
-            <TextInput
-              style={{ ...styles.profileTextInput, width: 130 }}
-              onChangeText={text => onChangeAuthCode(text)}
-              value={authCode}
-              placeholder=" . . . . . . "
-              placeholderTextColor="#969696"
-            />
-
-            <TouchableOpacity
-              style={styles.authButton}
-              onPress={() => navigation.navigate("Home")}
-              underlayColor="#fff"
-            >
-              <Text style={styles.authText}>Ověřit kód</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{ ...styles.backResendButton, marginTop: 24 }}
-              onPress={() => Alert.alert("Resend Auth Code")}
-              underlayColor="#fff"
-            >
-              <Text style={styles.backResendText}>Poslat znovu</Text>
-            </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.authButton}
+                  onPress={confirmCode}
+                  underlayColor="#fff"
+                >
+                  <Text style={styles.authText}>Ověřit kód</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ ...styles.backResendButton, marginTop: 24 }}
+                  onPress={() => navigation.navigate("Home")}
+                  underlayColor="#fff"
+                >
+                  <Text style={styles.backResendText}>Poslat znovu</Text>
+                </TouchableOpacity>
+              </View>
+            ) : null}
           </SafeAreaView>
         </ScrollView>
+        <FirebaseRecaptchaVerifierModal
+          ref={recaptchaVerifier}
+          firebaseConfig={firebase.app().options}
+        />
       </KeyboardAwareScrollView>
       {/* </KeyboardAvoidingView> */}
     </TouchableWithoutFeedback>
