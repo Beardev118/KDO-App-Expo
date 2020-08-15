@@ -25,6 +25,8 @@ import Day from "../modalPages/Day";
 import { SplashContext } from "../../globalState/SplashState";
 import EditUserGroupMenu from "../menu/EditUserGroupMenu";
 
+import UserContacts from "./invite/UserContacts";
+
 const styles = StyleSheet.create({
   headerRightContainer: {
     display: "flex",
@@ -56,7 +58,7 @@ function NavBar() {
   return (
     <NavigationContainer style={{ flex: 1, flexDirection: "column" }}>
       <Stack.Navigator
-        initialRouteName="Splash"
+        initialRouteName="UserContacts"
         screenOptions={{
           headerStyle: {
             backgroundColor: "#f4511e"
@@ -68,8 +70,8 @@ function NavBar() {
         }}
       >
         <Stack.Screen
-          name="Day"
-          component={Day}
+          name="UserContacts"
+          component={UserContacts}
           options={{
             headerShown: false
           }}
