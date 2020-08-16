@@ -51,12 +51,12 @@ function Status() {
                 maximumValue={100}
                 minimumValue={0}
                 minimumTrackTintColor="#27842A"
-                maximumTrackTintColor="#000000"
+                maximumTrackTintColor="#969696"
                 thumbTintColor="#27842A"
                 step={1}
                 value={sliderValue}
                 onValueChange={sliderValue => setSlider(sliderValue)}
-                style={{ width: 250, height: 40 }}
+                style={{ width: 250, height: 40, marginHorizontal: 16 }}
               />
 
               <TextInput

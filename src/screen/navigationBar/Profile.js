@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { IconButton, Colors } from "react-native-paper";
 import * as Progress from "react-native-progress";
 
+import { firebase } from "../../firebase/config";
 import UserImagePicker from "./profile/UserImagePicker";
 
 const styles = StyleSheet.create({
@@ -61,10 +62,55 @@ const styles = StyleSheet.create({
 });
 
 function Profile({ navigation }) {
-  const [userName, onChangeUserName] = useState("");
-  const [phoneNumber, onChangePhoneNumber] = useState("");
+  const [userName, setUserName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("Telefon");
+  const [authUser, setAuthUser] = useState(null);
+
+  useEffect(() => {
+    firebase.auth().onAuthStateChanged(user => {
+      setAuthUser(user);
+      firebase
+        .firestore()
+        .collection("profiles")
+        .doc(user["uid"])
+        .get()
+        .then(result => {
+          setUserName(result["cP"].proto["fields"].username["stringValue"]);
+          setPhoneNumber(user["phoneNumber"]);
+        });
+    });
+  }, []);
 
   const onSaveProfile = () => {
+    firebase.auth().onAuthStateChanged(user => {
+      if (user != null) {
+        let currentTime = Math.trunc(
+          firebase.firestore.Timestamp.now().toMillis() / 1000
+        );
+        firebase
+          .firestore()
+          .collection("profiles")
+          .doc(user["uid"])
+          .update({
+            hasPhoto: true,
+            username: userName
+          })
+          .then(cResult => {
+            firebase
+              .database()
+              .ref("ts/" + user["uid"])
+              .update({
+                p: currentTime
+              })
+              .catch(realtimeError => {
+                console.log("Login Realtime Error: ", realtimeError);
+              });
+          })
+          .catch(error => {
+            console.log("Login Error: ", error);
+          });
+      }
+    });
     navigation.goBack();
   };
   return (
@@ -89,7 +135,7 @@ function Profile({ navigation }) {
                 />
                 <TextInput
                   style={styles.profileTextInput}
-                  onChangeText={text => onChangeUserName(text)}
+                  onChangeText={text => setUserName(text)}
                   value={userName}
                   placeholder="Jméno"
                   placeholderTextColor="#969696"
@@ -102,13 +148,15 @@ function Profile({ navigation }) {
                   size={32}
                   // onPress={this.showMenu}
                 />
-                <TextInput
-                  style={styles.profileTextInput}
-                  onChangeText={text => onChangePhoneNumber(text)}
-                  value={phoneNumber}
-                  placeholder="Telefon"
-                  placeholderTextColor="#969696"
-                />
+                <Text
+                  style={{
+                    ...styles.profileTextInput,
+                    color: "#969696",
+                    textAlignVertical: "center"
+                  }}
+                >
+                  {phoneNumber}
+                </Text>
               </View>
             </View>
             <View

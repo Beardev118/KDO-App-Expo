@@ -1,7 +1,7 @@
 import { Provider as PaperProvider } from "react-native-paper";
 import "react-native-gesture-handler";
 import React from "react";
-import { View, Dimensions, StyleSheet } from "react-native";
+import { View, Dimensions, StyleSheet, YellowBox } from "react-native";
 import { name as appName } from "./app.json";
 import { COLOR, ThemeContext, getTheme } from "react-native-material-ui";
 import { MenuProvider } from "react-native-popup-menu";
@@ -25,6 +25,7 @@ const uiTheme = {
 const window = Dimensions.get("window");
 
 export default function App() {
+  YellowBox.ignoreWarnings(["Setting a timer"]);
   return (
     <View style={{ flex: 1 }}>
       <ThemeContext.Provider value={getTheme(uiTheme)}>

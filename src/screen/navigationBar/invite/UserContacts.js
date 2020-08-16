@@ -20,7 +20,8 @@ export default function UserContacts() {
       const { status } = await Contacts.requestPermissionsAsync();
       if (status === "granted") {
         const { data } = await Contacts.getContactsAsync({
-          fields: [Contacts.PHONE_NUMBERS]
+          fields: [Contacts.PHONE_NUMBERS],
+          sort: Contacts.Fields.FirstName
         });
 
         let filteredData = data.filter(item => item.phoneNumbers !== undefined);
@@ -33,12 +34,20 @@ export default function UserContacts() {
   }, []);
 
   const renderItem = ({ item }) => (
-    <View style={{ minHeight: 70, padding: 5 }}>
-      <Text style={{ color: "#bada55", fontWeight: "bold", fontSize: 26 }}>
+    <View
+      style={{
+        minHeight: 50,
+        padding: 5,
+        marginHorizontal: 20,
+        borderBottomColor: "#969696",
+        borderBottomWidth: 0.5
+      }}
+    >
+      <Text style={{ color: "#000", fontWeight: "bold", fontSize: 16 }}>
         {item.firstName + " "}
         {item.lastName}
       </Text>
-      <Text style={{ color: "#6B6B6B", fontWeight: "bold" }}>
+      <Text style={{ color: "#969696", fontWeight: "bold" }}>
         {item.phoneNumbers[0].number}
       </Text>
     </View>
@@ -60,23 +69,27 @@ export default function UserContacts() {
   }
 
   return (
-    <View style={{ flex: 1 }}>
-      <SafeAreaView style={{ backgroundColor: "#2f363c" }} />
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      <SafeAreaView style={{ backgroundColor: "#fff" }} />
       <TextInput
-        placeholder="Search"
-        placeholderTextColor="#dddddd"
+        placeholder="Search for contact"
+        placeholderTextColor="#6B6B6B"
         style={{
-          backgroundColor: "#2f363c",
+          backgroundColor: "#EDEDED",
           height: 50,
-          fontSize: 36,
-          padding: 10,
-          color: "white",
+          fontSize: 18,
+          paddingVertical: 10,
+          paddingHorizontal: 16,
+          color: "#000",
           borderBottomWidth: 0.5,
-          borderBottomColor: "#7d90a0"
+          borderBottomColor: "#7d90a0",
+          borderRadius: 25,
+          marginHorizontal: 10,
+          marginVertical: 6
         }}
         onChangeText={value => searchContacts(value)}
       />
-      <View style={{ flex: 1, backgroundColor: "#2f363c" }}>
+      <View style={{ flex: 1, backgroundColor: "#fff" }}>
         {isLoading ? (
           <View
             style={{
@@ -101,7 +114,7 @@ export default function UserContacts() {
                 marginTop: 50
               }}
             >
-              <Text style={{ color: "#bad555" }}>No Contacts Found</Text>
+              <Text style={{ color: "#6B6B6B" }}>No Contacts Found</Text>
             </View>
           )}
         />
@@ -118,83 +131,3 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   }
 });
-
-// import React, { Component } from "react";
-// import { View, Alert, Button } from "react-native";
-// // import { Button } from "react-native-elements"; // Version can be specified in package.json
-// import * as Contacts from "expo-contacts";
-// import * as Permissions from "expo-permissions";
-
-// export default class UserContacts extends Component {
-//   async showFirstContactAsync() {
-//     // Ask for permission to query contacts.
-//     const permission = await Permissions.askAsync(Permissions.CONTACTS);
-
-//     if (permission.status !== "granted") {
-//       // Permission was denied...
-//       return;
-//     }
-//     const contacts = await Contacts.getContactsAsync({
-//       fields: [Contacts.PHONETIC_FIRST_NAME, Contacts.EMAILS]
-//       // pageSize: 10,
-//       // pageOffset: 0
-//     });
-//     if (contacts.total > 0) {
-//       console.log(contacts.data[60].num);
-//       // Alert.alert(
-//       //   contacts.data[0]
-//       //   // "Your first contact is...",
-//       //   // `Name: ${contacts.data[0].name}\n` +
-//       //   //   `Phone numbers: ${contacts.data[0].phoneNumbers}\n` +
-//       //   //   `Emails: ${contacts.data[0].emails[0].email}`
-//       // );
-//     }
-//   }
-
-//   render() {
-//     return (
-//       <View style={{ flex: 1, paddingTop: 40 }}>
-//         <Button title="Get contacts" onPress={this.showFirstContactAsync} />
-//       </View>
-//     );
-//   }
-// }
-
-// import React, { useEffect } from "react";
-// import { View, Text } from "react-native";
-// import * as Contacts from "expo-contacts";
-
-// export default function App() {
-//   useEffect(() => {
-//     (async () => {
-//       const { status } = await Contacts.requestPermissionsAsync();
-//       if (status === "granted") {
-//         const { data } = await Contacts.getContactsAsync({
-//           fields: [Contacts.PHONE_NUMBERS]
-//         });
-
-//         let filteredData = data.filter(item => item.phoneNumbers !== undefined);
-
-//         console.log("Filtered data", filteredData);
-
-//         if (data.length > 0) {
-//           const contact = data[1];
-//           console.log("aaa", contact);
-//         }
-//       }
-//     })();
-//   }, []);
-
-//   return (
-//     <View
-//       style={{
-//         flex: 1,
-//         backgroundColor: "#fff",
-//         alignItems: "center",
-//         justifyContent: "center"
-//       }}
-//     >
-//       <Text>Contacts Module Example</Text>
-//     </View>
-//   );
-// }

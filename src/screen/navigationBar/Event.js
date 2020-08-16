@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     color: "#6B6B6B"
   },
   switchActive: {
-    marginEnd: 0
+    marginEnd: 4
   },
   eventTime: {
     height: 28,
@@ -216,32 +216,6 @@ const styles = StyleSheet.create({
   }
 });
 
-const TopBar = () => (
-  <View style={{ backgroundColor: "#E9E6DD" }}>
-    <View style={{ height: 8 }} />
-    <View style={styles.topBarContainer}>
-      <View style={styles.topBarSubView}>
-        <Text style={styles.eventName}>BADMINTON</Text>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Text style={styles.switchActive}>neaktivní</Text>
-          <Switch
-            trackColor={{ false: "#767577", true: "#81b0ff" }}
-            thumbColor={{ false: "#f5dd4b", true: "#f4f3f4" }}
-            ios_backgroundColor="#3e3e3e"
-            //   onValueChange={toggleSwitch}
-            value={"false"}
-          />
-        </View>
-      </View>
-      <Text style={styles.eventTime}>KTTT</Text>
-      <View style={styles.topBarSubView}>
-        <Text style={styles.eventMembers}>Kdo přijde:</Text>
-        <Text style={styles.eventAttend}>uar 3</Text>
-      </View>
-    </View>
-  </View>
-);
-
 const BottomBar = () => {
   const [modalStatus, setModalStatus] = useContext(GlobalContext);
 
@@ -342,6 +316,34 @@ function Event({ navigation }) {
       textNote: "50%"
     }
   ]);
+  const [isEnabled, setIsEnabled] = useState(false);
+  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+
+  const TopBar = () => (
+    <View style={{ backgroundColor: "#E9E6DD" }}>
+      <View style={{ height: 8 }} />
+      <View style={styles.topBarContainer}>
+        <View style={styles.topBarSubView}>
+          <Text style={styles.eventName}>BADMINTON</Text>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Text style={styles.switchActive}>neaktivní</Text>
+            <Switch
+              trackColor={{ false: "#767577", true: "#81b0ff" }}
+              thumbColor={{ false: "#f5dd4b", true: "#f4f3f4" }}
+              ios_backgroundColor="#3e3e3e"
+              onValueChange={toggleSwitch}
+              value={isEnabled}
+            />
+          </View>
+        </View>
+        <Text style={styles.eventTime}>KTTT</Text>
+        <View style={styles.topBarSubView}>
+          <Text style={styles.eventMembers}>Kdo přijde:</Text>
+          <Text style={styles.eventAttend}>uar 3</Text>
+        </View>
+      </View>
+    </View>
+  );
 
   const renderItem = ({ item }) => {
     return (

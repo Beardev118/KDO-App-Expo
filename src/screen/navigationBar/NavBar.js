@@ -58,7 +58,7 @@ function NavBar() {
   return (
     <NavigationContainer style={{ flex: 1, flexDirection: "column" }}>
       <Stack.Navigator
-        initialRouteName="UserContacts"
+        initialRouteName="Splash"
         screenOptions={{
           headerStyle: {
             backgroundColor: "#f4511e"
@@ -69,13 +69,6 @@ function NavBar() {
           // },
         }}
       >
-        <Stack.Screen
-          name="UserContacts"
-          component={UserContacts}
-          options={{
-            headerShown: false
-          }}
-        />
         <Stack.Screen
           name="Splash"
           component={Splash}
@@ -152,6 +145,17 @@ function NavBar() {
           name="EditTerm"
           component={EditTerm}
           options={navEditTermOptions}
+        />
+        <Stack.Screen
+          name="UserContacts"
+          component={UserContacts}
+          options={{
+            title: "Choose a contact",
+            headerStyle: {
+              backgroundColor: "#fff"
+            },
+            headerTintColor: "#00f"
+          }}
         />
       </Stack.Navigator>
     </NavigationContainer>

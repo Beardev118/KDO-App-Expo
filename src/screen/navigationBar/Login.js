@@ -11,7 +11,8 @@ import {
   Dimensions,
   Keyboard,
   TouchableWithoutFeedback,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  YellowBox
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { IconButton, Colors } from "react-native-paper";
@@ -137,7 +138,47 @@ function Login({ navigation }) {
       .signInWithCredential(credential)
       .then(result => {
         // Do something with the results here
-        navigation.navigate("Home");
+        let currentTime = Math.trunc(
+          firebase.firestore.Timestamp.now().toMillis() / 1000
+        );
+        result["additionalUserInfo"].isNewUser
+          ? firebase
+              .firestore()
+              .collection("profiles")
+              .doc(result["user"].uid)
+              .set({
+                email: "",
+                hasPhoto: false,
+                ownerOf: null,
+                phone: result["user"].phoneNumber,
+                publisher: false,
+                pushToken: null,
+                timeAdded: currentTime,
+                userId: result["user"].uid,
+                username: ""
+              })
+              .then(cResult => {
+                firebase
+                  .database()
+                  .ref("ts/" + result["user"].uid)
+                  .set({
+                    p: currentTime
+                  })
+                  .then(tsResult => {
+                    navigation.navigate("Home");
+                  })
+                  .catch(realtimeError => {
+                    console.log("Login Realtime Error: ", realtimeError);
+                  });
+              })
+              .catch(error => {
+                console.log("Login Error: ", error);
+              })
+          : navigation.navigate("Home");
+        initVerification();
+      })
+      .catch(error => {
+        console.log("Login Error: ", error);
       });
   };
 
@@ -203,6 +244,7 @@ function Login({ navigation }) {
                   value={authCode}
                   placeholder=" . . . . . . "
                   placeholderTextColor="#969696"
+                  keyboardType="number-pad"
                 />
 
                 <TouchableOpacity

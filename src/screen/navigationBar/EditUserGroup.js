@@ -168,6 +168,7 @@ function EditUserGroup() {
     setSelectedId(!selectedId);
     setMembers(currentMember);
   };
+  // const [members, setMembers] = useState([]);
   const [members, setMembers] = useState([
     {
       avatarId: "test 01",
@@ -238,13 +239,13 @@ function EditUserGroup() {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <KeyboardAwareScrollView
+      {/* <KeyboardAwareScrollView
         // style={{ backgroundColor: "#E9E6DD" }}
         resetScrollToCoords={{ x: 0, y: 0 }}
         contentContainerStyle={styles.container}
         scrollEnabled={false}
-      >
-        {/* <View style={styles.container}> */}
+      > */}
+      <View style={styles.container}>
         <View style={{ ...styles.subContainer, zIndex: 5, elevation: 5 }}>
           <View style={styles.textInputContainer}>
             <Text style={styles.subLabel}>Název skupiny</Text>
@@ -308,6 +309,18 @@ function EditUserGroup() {
               keyExtractor={item => item.key}
               extraData={selectedId}
               style={styles.flContainer}
+              ListEmptyComponent={() => (
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginTop: 50
+                  }}
+                >
+                  <Text style={{ color: "#6B6B6B" }}>No Contacts Found</Text>
+                </View>
+              )}
             />
           </View>
         </View>
@@ -334,8 +347,8 @@ function EditUserGroup() {
             <Text style={styles.btnText}>Pozvat nového člena</Text>
           </TouchableOpacity>
         </View>
-        {/* </View> */}
-      </KeyboardAwareScrollView>
+      </View>
+      {/* </KeyboardAwareScrollView> */}
     </TouchableWithoutFeedback>
   );
 }

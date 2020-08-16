@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
   }
 });
 
-function Invite() {
+function Invite({ navigation }) {
   const [valueMessage, onChangeMessage] = useState("Možná");
   const [phoneNumber, onChangePhoneNumber] = useState("");
 
@@ -130,7 +130,7 @@ function Invite() {
                 color={Colors.black}
                 size={28}
                 style={{ backgroundColor: "#969696" }}
-                // onPress={this.showMenu}
+                onPress={() => navigation.navigate("UserContacts")}
               />
             </View>
             <View style={styles.btnView}>
