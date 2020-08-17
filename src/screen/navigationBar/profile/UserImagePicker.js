@@ -4,18 +4,20 @@ import {
   Image,
   View,
   TouchableOpacity,
-  StyleSheet
+  StyleSheet,
+  ActivityIndicator,
+  ImageBackground
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import Constants from "expo-constants";
 import { IconButton, Colors } from "react-native-paper";
+import { firebase } from "../../../firebase/config";
+
 const styles = StyleSheet.create({
   userImage: {
     width: 180,
     height: 180,
     borderRadius: 90,
-    // borderWidth: 1,
-    // borderColor: "#6B6B6B",
     alignItems: "center",
     justifyContent: "center",
     marginTop: 32
@@ -24,6 +26,7 @@ const styles = StyleSheet.create({
 
 export default function UserImagePicker() {
   const [image, setImage] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -46,32 +49,49 @@ export default function UserImagePicker() {
       quality: 1
     });
 
-    console.log(result);
-
     if (!result.cancelled) {
-      setImage(result.uri);
+      const response = await fetch(result.uri);
+      const blob = await response.blob();
+      var ref = firebase
+        .storage()
+        .ref()
+        .child("profile_images")
+        .child("my_img");
+      setIsLoading(true);
+      ref.put(blob).then(uploadResult => {
+        setIsLoading(false);
+        setImage(result.uri);
+      });
     }
   };
 
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <TouchableOpacity
-        // style={styles.userImage}
-        onPress={pickImage}
-        underlayColor="#fff"
-      >
-        {image ? (
-          <Image source={{ uri: image }} style={styles.userImage} />
-        ) : (
-          <IconButton
-            icon="camera"
-            color={Colors.gray}
-            size={50}
-            style={styles.userImage}
-            // onPress={this.showMenu}
-          />
-        )}
-      </TouchableOpacity>
+      {isLoading ? (
+        <View style={styles.userImage}>
+          <ImageBackground style={styles.userImage}>
+            <ActivityIndicator size="large" color="#000" />
+          </ImageBackground>
+        </View>
+      ) : (
+        <TouchableOpacity
+          // style={styles.userImage}
+          onPress={pickImage}
+          underlayColor="#fff"
+        >
+          {image ? (
+            <Image source={{ uri: image }} style={styles.userImage} />
+          ) : (
+            <IconButton
+              icon="camera"
+              color={Colors.gray}
+              size={50}
+              style={styles.userImage}
+              // onPress={this.showMenu}
+            />
+          )}
+        </TouchableOpacity>
+      )}
     </View>
   );
 }

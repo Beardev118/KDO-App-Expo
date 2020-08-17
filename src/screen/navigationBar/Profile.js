@@ -8,7 +8,8 @@ import {
   Alert,
   Keyboard,
   TouchableWithoutFeedback,
-  ScrollView
+  ScrollView,
+  ActivityIndicator
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { IconButton, Colors } from "react-native-paper";
@@ -62,6 +63,7 @@ const styles = StyleSheet.create({
 });
 
 function Profile({ navigation }) {
+  const [isLoading, setIsLoading] = useState(true);
   const [userName, setUserName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("Telefon");
   const [authUser, setAuthUser] = useState(null);
@@ -77,6 +79,7 @@ function Profile({ navigation }) {
         .then(result => {
           setUserName(result["cP"].proto["fields"].username["stringValue"]);
           setPhoneNumber(user["phoneNumber"]);
+          setIsLoading(false);
         });
     });
   }, []);
@@ -121,81 +124,99 @@ function Profile({ navigation }) {
         contentContainerStyle={styles.container}
         scrollEnabled={false}
       >
-        <ScrollView style={{ width: "100%" }}>
-          <View style={styles.container}>
-            <UserImagePicker />
+        {isLoading ? (
+          <View
+            style={{
+              ...StyleSheet.absoluteFill,
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+          >
+            <ActivityIndicator size="large" color="#000" />
+          </View>
+        ) : (
+          <ScrollView style={{ width: "100%" }}>
+            <View style={styles.container}>
+              <UserImagePicker
+                style={{ width: 180, height: 180, backgroundColor: "blue" }}
+              />
 
-            <View style={{ alignSelf: "stretch" }}>
-              <View style={styles.textInputContainer}>
-                <IconButton
-                  icon="account"
-                  color={Colors.black}
-                  size={32}
-                  // onPress={this.showMenu}
-                />
-                <TextInput
-                  style={styles.profileTextInput}
-                  onChangeText={text => setUserName(text)}
-                  value={userName}
-                  placeholder="Jméno"
-                  placeholderTextColor="#969696"
-                />
-              </View>
-              <View style={{ ...styles.textInputContainer, marginTop: 32 }}>
-                <IconButton
-                  icon="phone"
-                  color={Colors.black}
-                  size={32}
-                  // onPress={this.showMenu}
-                />
-                <Text
+              <View style={{ alignSelf: "stretch" }}>
+                <View style={styles.textInputContainer}>
+                  <IconButton
+                    icon="account"
+                    color={Colors.black}
+                    size={32}
+                    // onPress={this.showMenu}
+                  />
+                  <TextInput
+                    style={styles.profileTextInput}
+                    onChangeText={text => setUserName(text)}
+                    value={userName}
+                    placeholder="Jméno"
+                    placeholderTextColor="#969696"
+                  />
+                </View>
+                <View
                   style={{
-                    ...styles.profileTextInput,
-                    color: "#969696",
-                    textAlignVertical: "center"
+                    ...styles.textInputContainer,
+                    marginTop: 32
                   }}
                 >
-                  {phoneNumber}
-                </Text>
+                  <IconButton
+                    icon="phone"
+                    color={Colors.black}
+                    size={32}
+                    // onPress={this.showMenu}
+                  />
+                  <View
+                    style={{
+                      ...styles.profileTextInput,
+                      justifyContent: "center"
+                    }}
+                  >
+                    <Text style={{ color: "#969696" }}>{phoneNumber}</Text>
+                  </View>
+                </View>
+              </View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  marginTop: 24,
+                  alignSelf: "stretch",
+                  justifyContent: "space-around"
+                }}
+              >
+                <TouchableOpacity
+                  style={{
+                    ...styles.profileScreenButton,
+                    marginTop: 8,
+                    backgroundColor: "#FFF"
+                  }}
+                  onPress={() => navigation.goBack()}
+                  underlayColor="#fff"
+                >
+                  <Text style={{ ...styles.btnText, color: "#969696" }}>
+                    Zpět
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{
+                    ...styles.profileScreenButton,
+                    marginTop: 8,
+                    backgroundColor: "#28742A"
+                  }}
+                  onPress={onSaveProfile}
+                  underlayColor="#fff"
+                >
+                  <Text style={{ ...styles.btnText, color: "white" }}>
+                    Uložit
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
-            <View
-              style={{
-                flexDirection: "row",
-                marginBottom: 88,
-                alignSelf: "stretch",
-                justifyContent: "space-around"
-              }}
-            >
-              <TouchableOpacity
-                style={{
-                  ...styles.profileScreenButton,
-                  marginTop: 8,
-                  backgroundColor: "#FFF"
-                }}
-                onPress={() => navigation.goBack()}
-                underlayColor="#fff"
-              >
-                <Text style={{ ...styles.btnText, color: "#969696" }}>
-                  Zpět
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{
-                  ...styles.profileScreenButton,
-                  marginTop: 8,
-                  backgroundColor: "#28742A"
-                }}
-                onPress={onSaveProfile}
-                underlayColor="#fff"
-              >
-                <Text style={{ ...styles.btnText, color: "white" }}>
-                  Uložit
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </ScrollView>
+          </ScrollView>
+        )}
       </KeyboardAwareScrollView>
     </TouchableWithoutFeedback>
   );
