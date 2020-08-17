@@ -165,7 +165,20 @@ function Login({ navigation }) {
                     p: currentTime
                   })
                   .then(tsResult => {
-                    navigation.navigate("Home");
+                    const nId = result["user"].phoneNumber.slice(1);
+                    console.log("nID", nId);
+                    const uId = result["user"].uid;
+                    firebase
+                      .database()
+                      .ref("dictionary")
+                      .child(nId)
+                      .set(uId)
+                      .then(() => {
+                        navigation.navigate("Home");
+                      })
+                      .catch(dicError => {
+                        console.log("dicError: ", dicError);
+                      });
                   })
                   .catch(realtimeError => {
                     console.log("Login Realtime Error: ", realtimeError);

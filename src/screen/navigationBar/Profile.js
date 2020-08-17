@@ -9,7 +9,8 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   ScrollView,
-  ActivityIndicator
+  ActivityIndicator,
+  AsyncStorage
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { IconButton, Colors } from "react-native-paper";
@@ -69,19 +70,26 @@ function Profile({ navigation }) {
   const [authUser, setAuthUser] = useState(null);
 
   useEffect(() => {
+    const ac = new AbortController();
     firebase.auth().onAuthStateChanged(user => {
-      setAuthUser(user);
-      firebase
-        .firestore()
-        .collection("profiles")
-        .doc(user["uid"])
-        .get()
-        .then(result => {
-          setUserName(result["cP"].proto["fields"].username["stringValue"]);
-          setPhoneNumber(user["phoneNumber"]);
-          setIsLoading(false);
-        });
+      if (user != null) {
+        setAuthUser(user);
+        firebase
+          .firestore()
+          .collection("profiles")
+          .doc(user["uid"])
+          .get()
+          .then(result => {
+            const userData = result.data();
+            if (userData.userName != "") {
+              setUserName(userData.username);
+            }
+            setPhoneNumber(user["phoneNumber"]);
+            setIsLoading(false);
+          });
+      }
     });
+    return () => ac.abort(); // Abort both fetches on unmount
   }, []);
 
   const onSaveProfile = () => {
@@ -115,6 +123,18 @@ function Profile({ navigation }) {
       }
     });
     navigation.goBack();
+  };
+
+  const onBackPP = () => {
+    const userValue = AsyncStorage.getItem("@userData")
+      .then(getResult => {
+        console.log("pprop", JSON.parse(getResult));
+        navigation.goBack();
+        // navigation.navigate("Home");
+      })
+      .catch(getError => {
+        console.log("getDataError", getError);
+      });
   };
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
