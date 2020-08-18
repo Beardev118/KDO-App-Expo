@@ -26,7 +26,8 @@ const styles = StyleSheet.create({
 
 export default function UserImagePicker() {
   const [image, setImage] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [myData, setMyData] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -38,6 +39,25 @@ export default function UserImagePicker() {
           alert("Sorry, we need camera roll permissions to make this work!");
         }
       }
+
+      firebase.auth().onAuthStateChanged(async user => {
+        if (user != null) {
+          setMyData(user);
+          await firebase
+            .storage()
+            .ref()
+            .child("profile_images")
+            .child(user.uid)
+            .getDownloadURL()
+            .then(url => {
+              setIsLoading(false);
+              setImage(url);
+            })
+            .catch(error => {
+              setIsLoading(false);
+            });
+        }
+      });
     })();
   }, []);
 
@@ -56,7 +76,7 @@ export default function UserImagePicker() {
         .storage()
         .ref()
         .child("profile_images")
-        .child("my_img");
+        .child(myData.uid);
       setIsLoading(true);
       ref.put(blob).then(uploadResult => {
         setIsLoading(false);

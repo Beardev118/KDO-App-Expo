@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   StyleSheet,
@@ -8,7 +8,8 @@ import {
   Button,
   Dimensions,
   TouchableOpacity,
-  AsyncStorage
+  AsyncStorage,
+  ActivityIndicator
 } from "react-native";
 import * as FileSystem from "expo-file-system";
 import { firebase } from "../../firebase/config";
@@ -90,7 +91,12 @@ const styles = StyleSheet.create({
 });
 
 const Splash = ({ navigation }) => {
-  const [authUser, setAuthUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setIsLoading(false);
+    readProfiles();
+  }, []);
 
   function readProfiles() {
     const fProfilesUri = FileSystem.documentDirectory + "KDODataProfiles.txt";
@@ -142,7 +148,6 @@ const Splash = ({ navigation }) => {
             )
               .then(setProfilesResult => {
                 readScheduled();
-                console.log("ProfilesData: ", profilesContents);
               })
               .catch(setProfilesError => {
                 console.log("setProfilesError: ", setProfilesError);
@@ -177,7 +182,7 @@ const Splash = ({ navigation }) => {
           JSON.stringify(scheduledContents)
         )
           .then(setScheduledResult => {
-            readUserGroups();
+            readUGEvents();
           })
           .catch(setScheduledError => {
             console.log("setScheduledError: ", setScheduledError);
@@ -188,7 +193,83 @@ const Splash = ({ navigation }) => {
       });
   }
 
-  function readUserGroups() {
+  function readUGEvents() {
+    firebase
+      .firestore()
+      .collection("userGroups")
+      .get()
+      .then(getUserGroupsResult => {
+        let userGroupsEventsContents = [];
+        let cnt = getUserGroupsResult.size;
+
+        getUserGroupsResult.forEach(async doc => {
+          let eventsContents = [];
+
+          //get Events
+          await firebase
+            .firestore()
+            .collection("userGroups")
+            .doc(doc.id)
+            .collection("events")
+            .get()
+            .then(getEventsResult => {
+              let eCnt = getEventsResult.size;
+
+              getEventsResult.forEach(async getEventDoc => {
+                await firebase
+                  .firestore()
+                  .collection("userGroups")
+                  .doc(doc.id)
+                  .collection("events")
+                  .doc(getEventDoc.id)
+                  .collection("notify")
+                  .get()
+                  .then(notifyResult => {
+                    let notiCnt = notifyResult.size;
+
+                    let notifyContents = [];
+                    notifyResult.forEach(notifyDoc => {
+                      notifyContents.push({
+                        key: notifyDoc.id,
+                        notifyValue: notifyDoc.data()
+                      });
+                      notiCnt -= 1;
+                    });
+                    if (notiCnt == 0) {
+                      eventsContents.push({
+                        key: getEventDoc.id,
+                        eveValue: getEventDoc.data(),
+                        notify: notifyContents
+                      });
+                      eCnt -= 1;
+                    }
+                  })
+                  .catch(notifyErr => {
+                    console.log("notifyError", notifyErr);
+                  });
+                if (eCnt == 0) {
+                  userGroupsEventsContents.push({
+                    key: doc.id,
+                    events: eventsContents
+                  });
+                  cnt -= 1;
+                }
+                if (cnt == 0) {
+                  readUserGroups(userGroupsEventsContents);
+                }
+              });
+            })
+            .catch(eventsError => {
+              console.log("eventsError: ", eventsError);
+            });
+        });
+      })
+      .catch(getUserGroupsError => {
+        console.log("getUserGroupsError: ", getUserGroupsError);
+      });
+  }
+
+  function readUserGroups(eData) {
     const fUserGroupsUri =
       FileSystem.documentDirectory + "KDODataUserGroups.txt";
     const options = FileSystem.EncodingType.UTF8;
@@ -199,23 +280,56 @@ const Splash = ({ navigation }) => {
       .get()
       .then(getUserGroupsResult => {
         const userGroupsContents = [];
-        getUserGroupsResult.forEach(doc => {
-          userGroupsContents.push({
-            key: doc.id,
-            value: doc.data()
-          });
+        let cnt = getUserGroupsResult.size;
+
+        getUserGroupsResult.forEach(async doc => {
+          let membersContents = [];
+
+          // get members
+          await firebase
+            .firestore()
+            .collection("userGroups")
+            .doc(doc.id)
+            .collection("members")
+            .get()
+            .then(async getMemResult => {
+              nCnt = getMemResult.size;
+              getMemResult.forEach(getMemDoc => {
+                membersContents.push({
+                  key: getMemDoc.id,
+                  active: getMemDoc.data()
+                });
+                nCnt -= 1;
+              });
+              if (nCnt == 0) {
+                let eveData = eData.find(item => item.key === doc.id);
+                userGroupsContents.push({
+                  key: doc.id,
+                  value: doc.data(),
+                  members: membersContents,
+                  events: eveData.events
+                });
+                cnt -= 1;
+              }
+
+              if (cnt == 0) {
+                FileSystem.writeAsStringAsync(
+                  fUserGroupsUri,
+                  JSON.stringify(userGroupsContents)
+                )
+                  .then(setUserGroupsResult => {
+                    setIsLoading(true);
+                    // console.log("userGroupsContents: ", userGroupsContents);
+                  })
+                  .catch(setUserGroupsError => {
+                    console.log("setUserGroupsError: ", setUserGroupsError);
+                  });
+              }
+            })
+            .catch(memErr => {
+              console.log("memErr: ", memErr);
+            });
         });
-        FileSystem.writeAsStringAsync(
-          fUserGroupsUri,
-          JSON.stringify(userGroupsContents)
-        )
-          .then(setUserGroupsResult => {
-            navigation.navigate("Home");
-            // console.log("ZZZZZZZ", userGroupsContents);
-          })
-          .catch(setUserGroupsError => {
-            console.log("setUserGroupsError: ", setUserGroupsError);
-          });
       })
       .catch(getUserGroupsError => {
         console.log("getUserGroupsError: ", getUserGroupsError);
@@ -225,8 +339,7 @@ const Splash = ({ navigation }) => {
   const Login = () => {
     firebase.auth().onAuthStateChanged(user => {
       if (user != null) {
-        setAuthUser(user);
-        readProfiles();
+        navigation.navigate("Home");
       } else {
         navigation.navigate("Login");
       }
@@ -240,15 +353,17 @@ const Splash = ({ navigation }) => {
       <Text style={styles.titleText}>PŘIJDE</Text>
       <SplashImage />
       <Text style={styles.plainText}>Kdo jde dnes na trening?</Text>
-      <View style={styles.btnView}>
-        <TouchableOpacity
-          style={styles.startScreenButton}
-          onPress={Login}
-          underlayColor="#fff"
-        >
-          <Text style={styles.startText}>START</Text>
-        </TouchableOpacity>
-      </View>
+      {isLoading ? (
+        <View style={styles.btnView}>
+          <TouchableOpacity
+            style={styles.startScreenButton}
+            onPress={Login}
+            underlayColor="#fff"
+          >
+            <Text style={styles.startText}>START</Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
     </View>
   );
 };

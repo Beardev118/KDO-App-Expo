@@ -15,6 +15,7 @@ import {
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { IconButton, Colors } from "react-native-paper";
 import * as Progress from "react-native-progress";
+import * as FileSystem from "expo-file-system";
 
 import { firebase } from "../../firebase/config";
 import UserImagePicker from "./profile/UserImagePicker";
@@ -63,38 +64,59 @@ const styles = StyleSheet.create({
   }
 });
 
-function Profile({ navigation }) {
+const useFetchProfile = () => {
+  // const [authUser, setAuthUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [userName, setUserName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("Telefon");
-  const [authUser, setAuthUser] = useState(null);
 
   useEffect(() => {
     const ac = new AbortController();
-    firebase.auth().onAuthStateChanged(user => {
+    let didUnsubscribe = false;
+
+    if (didUnsubscribe) return;
+    firebase.auth().onAuthStateChanged(async user => {
       if (user != null) {
-        setAuthUser(user);
-        firebase
-          .firestore()
-          .collection("profiles")
-          .doc(user["uid"])
-          .get()
-          .then(result => {
-            const userData = result.data();
-            if (userData.userName != "") {
-              setUserName(userData.username);
-            }
-            setPhoneNumber(user["phoneNumber"]);
-            setIsLoading(false);
-          });
+        // setAuthUser(user);
+        const fProfilesUri =
+          FileSystem.documentDirectory + "KDODataProfiles.txt";
+        const rawProfilesData = await FileSystem.readAsStringAsync(
+          fProfilesUri
+        );
+        const profilesData = JSON.parse(rawProfilesData);
+        const myProfileData = profilesData.find(item => item.key === user.uid);
+
+        const myName = myProfileData.value.username;
+
+        if (myName != "") {
+          setUserName(myName);
+        }
+        setPhoneNumber(myProfileData.value.phone);
+        setIsLoading(false);
       }
     });
-    return () => ac.abort(); // Abort both fetches on unmount
+    return () => {
+      ac.abort();
+      didUnsubscribe = true;
+    }; // Abort both fetches on unmount
   }, []);
+
+  return { isLoading, setIsLoading, userName, setUserName, phoneNumber };
+};
+
+function Profile({ navigation }) {
+  const {
+    isLoading,
+    setIsLoading,
+    userName,
+    setUserName,
+    phoneNumber
+  } = useFetchProfile();
 
   const onSaveProfile = () => {
     firebase.auth().onAuthStateChanged(user => {
       if (user != null) {
+        setIsLoading(true);
         let currentTime = Math.trunc(
           firebase.firestore.Timestamp.now().toMillis() / 1000
         );
@@ -113,28 +135,21 @@ function Profile({ navigation }) {
               .update({
                 p: currentTime
               })
+              .then(tsResult => {
+                setIsLoading(false);
+                navigation.goBack();
+              })
               .catch(realtimeError => {
+                setIsLoading(false);
                 console.log("Login Realtime Error: ", realtimeError);
               });
           })
           .catch(error => {
+            setIsLoading(false);
             console.log("Login Error: ", error);
           });
       }
     });
-    navigation.goBack();
-  };
-
-  const onBackPP = () => {
-    const userValue = AsyncStorage.getItem("@userData")
-      .then(getResult => {
-        console.log("pprop", JSON.parse(getResult));
-        navigation.goBack();
-        // navigation.navigate("Home");
-      })
-      .catch(getError => {
-        console.log("getDataError", getError);
-      });
   };
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -157,9 +172,7 @@ function Profile({ navigation }) {
         ) : (
           <ScrollView style={{ width: "100%" }}>
             <View style={styles.container}>
-              <UserImagePicker
-                style={{ width: 180, height: 180, backgroundColor: "blue" }}
-              />
+              <UserImagePicker style={{ width: 180, height: 180 }} />
 
               <View style={{ alignSelf: "stretch" }}>
                 <View style={styles.textInputContainer}>
