@@ -10,6 +10,7 @@ import AppStart from "./AppStart";
 import { GlobalState } from "./src/globalState/GlobalState";
 import { SplashState } from "./src/globalState/SplashState";
 import { MemberState } from "./src/globalState/MemberState";
+import { InactiveState } from "./src/globalState/InactiveState";
 
 const uiTheme = {
   palette: {
@@ -33,7 +34,9 @@ export default function App() {
           <MemberState>
             <SplashState>
               <GlobalState>
-                <AppStart />
+                <InactiveState>
+                  <AppStart />
+                </InactiveState>
               </GlobalState>
             </SplashState>
           </MemberState>

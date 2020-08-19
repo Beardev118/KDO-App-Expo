@@ -55,6 +55,7 @@ const Stack = createStackNavigator();
 
 function NavBar() {
   const [splashStatus, setSplashStatus] = useContext(SplashContext);
+
   return (
     <NavigationContainer style={{ flex: 1, flexDirection: "column" }}>
       <Stack.Navigator

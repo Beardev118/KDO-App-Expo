@@ -1,13 +1,17 @@
 import "react-native-gesture-handler";
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   FlatList,
   StyleSheet,
   Text,
   View,
   SafeAreaView,
-  TouchableOpacity
+  TouchableOpacity,
+  ActivityIndicator
 } from "react-native";
+import * as FileSystem from "expo-file-system";
+import { firebase } from "../../firebase/config";
+import { InactiveContext } from "../../globalState/InactiveState";
 
 const styles = StyleSheet.create({
   headerRightContainer: {
@@ -52,7 +56,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     textAlignVertical: "center",
     color: "green",
-    backgroundColor: "white",
     fontSize: 12
   },
   eNote: {
@@ -61,21 +64,23 @@ const styles = StyleSheet.create({
     textAlign: "right",
     textAlignVertical: "center",
     padding: 9,
-    paddingEnd: 0
+    paddingEnd: 0,
+    color: "#6B6B6B"
   },
   eDate: {
     flex: 0.7,
-    fontSize: 16,
+    fontSize: 14,
     textAlign: "left",
     textAlignVertical: "center",
-    padding: 4
+    padding: 4,
+    color: "#6B6B6B"
   },
   eCnt: {
     flex: 0.3,
-    fontSize: 16,
-    backgroundColor: "white",
+    fontSize: 14,
     textAlign: "right",
     textAlignVertical: "center",
+    color: "#6B6B6B",
     padding: 4
   }
 });
@@ -83,170 +88,298 @@ const styles = StyleSheet.create({
 const Item = ({ item, onPress, style }) => (
   <TouchableOpacity
     onPress={onPress}
-    style={{ borderBottomColor: "black", borderBottomWidth: 1 }}
+    style={{
+      borderBottomColor: "#969696",
+      borderBottomWidth: 1,
+      backgroundColor: item.eventStatus ? "#fff" : "#DEDEDE"
+    }}
   >
     <View key={item.key} style={styles.item}>
       <View style={styles.subContainer}>
-        <Text style={styles.eName}>{item.eventName}</Text>
+        <Text
+          style={{
+            ...styles.eName,
+            color: item.eventStatus ? "#000" : "#969696"
+          }}
+        >
+          {item.eventName}
+        </Text>
         <Text style={styles.eBadge}>{item.eventBadge}</Text>
         <Text style={styles.eNote}>{item.eventNote}</Text>
       </View>
       <View style={styles.subContainer}>
         <Text style={styles.eDate}>{item.eventDate}</Text>
-        <Text style={styles.eCnt}>{item.eventCnt}</Text>
+        <Text style={styles.eCnt}>Účast: {item.eventCnt}</Text>
       </View>
     </View>
   </TouchableOpacity>
 );
 
+const onChangeEveStr = value => {
+  let strTemp = value;
+  if (Number(strTemp) < 10) {
+    strTemp = "0" + strTemp;
+  }
+  return strTemp;
+};
+
+const onChangeEveBadge = value => {
+  switch (value) {
+    case 0:
+      return "dnes";
+    case 1:
+      return "zítra";
+    default:
+      return;
+  }
+  return;
+};
+
+const onChangeEveDate = (dateVal, monthVal, dayVal) => {
+  const monthDay = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+  let dateTemp = dateVal + dayVal;
+  let monthTemp = monthVal;
+  if (dateTemp > monthDay[monthTemp - 1]) {
+    dateTemp -= monthDay[monthTemp - 1];
+    monthTemp += 1;
+    if (monthTemp > 12) monthTemp = 1;
+  }
+  return onChangeEveStr(dateTemp) + "." + onChangeEveStr(monthTemp) + ".";
+};
+
+const onChangeEveNote = value => {
+  const dayNote = [
+    "",
+    "Pondělí",
+    "Úterý",
+    "Středa",
+    "Čtvrtek",
+    "Pátek",
+    "Sobota",
+    "Neděle"
+  ];
+  return dayNote[value];
+};
+
+const onChangeKeyDate = value => {
+  const curYear = new Date().getFullYear() - 2000;
+  const eveDate = value.split(".");
+  const eveTime = eveDate[2].split(":");
+  const eveHour = eveTime[0].split(" ");
+  return String(curYear) + eveDate[1] + eveDate[0] + eveHour[1] + eveTime[1];
+};
+
 function Calendar({ navigation }) {
   const [selectedId, setSelectedId] = useState(null);
-  const [classes, setClasses] = useState([
-    {
-      eventName: "test 01",
-      key: "1",
-      eventDate: "08.08 16:00",
-      eventNote: "AAA",
-      eventCnt: "3",
-      eventBadge: "ANS"
-    },
-    {
-      eventName: "test 02",
-      key: "2",
-      eventDate: "08.08 16:00",
-      eventNote: "BAA",
-      eventCnt: "3",
-      eventBadge: "BNS"
-    },
-    {
-      eventName: "test 03",
-      key: "3",
-      eventDate: "08.08 16:00",
-      eventNote: "CAA",
-      eventCnt: "3",
-      eventBadge: "CNS"
-    },
-    {
-      eventName: "test 04",
-      key: "4",
-      eventDate: "08.08 16:00",
-      eventNote: "DAA",
-      eventCnt: "3",
-      eventBadge: "DNS"
-    },
-    {
-      eventName: "test 05",
-      key: "5",
-      eventDate: "08.08 16:00",
-      eventNote: "EAA",
-      eventCnt: "3",
-      eventBadge: "ENS"
-    },
-    {
-      eventName: "test 06",
-      key: "6",
-      eventDate: "08.08 16:00",
-      eventNote: "FAA",
-      eventCnt: "3",
-      eventBadge: "FNS"
-    },
-    {
-      eventName: "test 07",
-      key: "7",
-      eventDate: "08.08 16:00",
-      eventNote: "GAA",
-      eventCnt: "3",
-      eventBadge: "GNS"
-    },
-    {
-      eventName: "test 08",
-      key: "8",
-      eventDate: "08.08 16:00",
-      eventNote: "FAA",
-      eventCnt: "3",
-      eventBadge: "FNS"
-    },
-    {
-      eventName: "test 09",
-      key: "9",
-      eventDate: "08.08 16:00",
-      eventNote: "GAA",
-      eventCnt: "3",
-      eventBadge: "GNS"
-    },
-    {
-      eventName: "test 10",
-      key: "10",
-      eventDate: "08.08 16:00",
-      eventNote: "FAA",
-      eventCnt: "3",
-      eventBadge: "FNS"
-    },
-    {
-      eventName: "test 03",
-      key: "11",
-      eventDate: "08.08 16:00",
-      eventNote: "CAA",
-      eventCnt: "3",
-      eventBadge: "CNS"
-    },
-    {
-      eventName: "test 04",
-      key: "12",
-      eventDate: "08.08 16:00",
-      eventNote: "DAA",
-      eventCnt: "3",
-      eventBadge: "DNS"
-    },
-    {
-      eventName: "test 05",
-      key: "13",
-      eventDate: "08.08 16:00",
-      eventNote: "EAA",
-      eventCnt: "3",
-      eventBadge: "ENS"
-    },
-    {
-      eventName: "test 06",
-      key: "14",
-      eventDate: "08.08 16:00",
-      eventNote: "FAA",
-      eventCnt: "3",
-      eventBadge: "FNS"
-    },
-    {
-      eventName: "test 07",
-      key: "15",
-      eventDate: "08.08 16:00",
-      eventNote: "GAA",
-      eventCnt: "3",
-      eventBadge: "GNS"
-    },
-    {
-      eventName: "test 08",
-      key: "16",
-      eventDate: "08.08 16:00",
-      eventNote: "FAA",
-      eventCnt: "3",
-      eventBadge: "FNS"
-    },
-    {
-      eventName: "test 09",
-      key: "17",
-      eventDate: "08.08 16:00",
-      eventNote: "GAA",
-      eventCnt: "3",
-      eventBadge: "GNS"
-    },
-    {
-      eventName: "test 10",
-      key: "18",
-      eventDate: "08.08 16:00",
-      eventNote: "FAA",
-      eventCnt: "3",
-      eventBadge: "FNS"
-    }
-  ]);
+  const [activeClasses, setActiveClasses] = useState(() => {
+    return [];
+  });
+  const [inactiveClasses, setInactiveClasses] = useState(() => {
+    return [];
+  });
+  const [isInactiveFlag, setIsInactiveFlag] = useContext(InactiveContext);
+  const [isLoading, setIsLoading] = useState(true);
+  const [eveCnt, setEveCnt] = useState(false);
+  const [userGData, setUserGData] = useState(null);
+
+  useEffect(() => {
+    firebase.auth().onAuthStateChanged(async user => {
+      if (user != null) {
+        // profiles Data
+        const fProfilesUri =
+          FileSystem.documentDirectory + "KDODataProfiles.txt";
+        const rawProfilesData = await FileSystem.readAsStringAsync(
+          fProfilesUri
+        );
+        const profilesData = JSON.parse(rawProfilesData);
+
+        // userGroups Data
+        const fUserGroupsUri =
+          FileSystem.documentDirectory + "KDODataUserGroups.txt";
+        const rawUserGroupsData = await FileSystem.readAsStringAsync(
+          fUserGroupsUri
+        );
+        const userGroupsData = JSON.parse(rawUserGroupsData);
+
+        setUserGData(userGroupsData);
+
+        const myProfileData = profilesData.find(item => item.key === user.uid);
+
+        const eventsActiveCalendar = [];
+        const eventsInactiveCalendar = [];
+
+        const myUserGroups = myProfileData.memberOf;
+        myUserGroups.forEach(item => {
+          const iUserGroup = userGroupsData.find(
+            ugItem => ugItem.key === item.key
+          );
+          const ugTitle = iUserGroup.value.name;
+
+          const ugEvents = iUserGroup.events;
+          ugEvents.forEach(ugeItem => {
+            const eveTitle = ugeItem.eveValue.name;
+
+            const eveStartDate = ugeItem.eveValue.started.split(",");
+            const eveTime =
+              onChangeEveStr(eveStartDate[1]) +
+              ":" +
+              onChangeEveStr(eveStartDate[0]);
+
+            const curDay = new Date().getDay();
+            let eveDay = Number(eveStartDate[4]) - curDay;
+            if (eveDay < 0) eveDay += 7;
+            if (eveDay == 0) {
+              const curHour = new Date().getHours();
+              const curMinute = new Date().getMinutes();
+              if (
+                curHour > Number(eveStartDate[1]) ||
+                (curHour == Number(eveStartDate[1]) &&
+                  curMinute >= Number(eveStartDate[0]))
+              )
+                eveDay = 7;
+            }
+
+            const eveBadge = onChangeEveBadge(eveDay);
+            const eveNote = onChangeEveNote(Number(eveStartDate[4]));
+
+            const eDate = new Date().getDate();
+            const eMonth = new Date().getMonth() + 1;
+
+            const eveDate = onChangeEveDate(eDate, eMonth, eveDay);
+
+            const myNotify = ugeItem.notify.find(
+              eveNotiItem => eveNotiItem.key === user.uid
+            );
+
+            if (myNotify !== undefined) {
+              const isActive = myNotify.notifyValue.active;
+
+              if (isActive == true) {
+                eventsActiveCalendar.push({
+                  eventName: ugTitle + " " + eveTitle,
+                  key: ugeItem.key,
+                  eventDate: eveDate + " " + eveTime,
+                  eventNote: eveNote,
+                  eventCnt: 0,
+                  eventBadge: eveBadge,
+                  eventStatus: isActive,
+                  eventDay: eveDay
+                });
+              }
+              eventsInactiveCalendar.push({
+                eventName: ugTitle + " " + eveTitle,
+                key: ugeItem.key,
+                eventDate: eveDate + " " + eveTime,
+                eventNote: eveNote,
+                eventCnt: 0,
+                eventBadge: eveBadge,
+                eventStatus: isActive,
+                eventDay: eveDay
+              });
+            }
+          });
+        });
+
+        eventsActiveCalendar.sort((a, b) => (a.eventDay < b.eventDay ? -1 : 1));
+        eventsInactiveCalendar.sort((a, b) =>
+          a.eventDay < b.eventDay ? -1 : 1
+        );
+
+        setActiveClasses(eventsActiveCalendar);
+        setInactiveClasses(eventsInactiveCalendar);
+        setEveCnt(prev => !prev);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    //Firebase Realtime DB snapshot
+    firebase
+      .database()
+      .ref("/responses")
+      .on("value", snapshot => {
+        // console.log('User data: ', snapshot.val());
+        const resData = snapshot.val();
+        const inactiveTempData = [];
+        const activeTempData = [];
+
+        inactiveClasses.forEach(item => {
+          const eveTempData = resData[item.key];
+          const eveDateKey = onChangeKeyDate(item.eventDate);
+
+          let itemFlag = false;
+
+          if (eveTempData !== undefined && eveDateKey !== undefined) {
+            const eveMemData = eveTempData[eveDateKey];
+            if (eveMemData !== undefined) {
+              let cnt = 0;
+
+              let eveMembersKey = null;
+
+              userGData.forEach(uItem => {
+                const uItemEvents = uItem.events;
+                const tempUItemEvents = uItemEvents.find(
+                  uieItem => uieItem.key === item.key
+                );
+                if (tempUItemEvents !== undefined) {
+                  eveMembersKey = uItem.key;
+                }
+              });
+
+              const eveMembers = userGData.find(
+                uItem => uItem.key === eveMembersKey
+              );
+
+              eveMembers["members"].forEach(emItem => {
+                const eveMData = eveMemData[emItem.key];
+                if (eveMData !== undefined) {
+                  if (eveMData.p >= 80) cnt += 1;
+                }
+              });
+
+              inactiveTempData.push({
+                eventName: item.eventName,
+                key: item.key,
+                eventDate: item.eventDate,
+                eventNote: item.eventNote,
+                eventCnt: cnt,
+                eventBadge: item.eventBadge,
+                eventStatus: item.eventStatus,
+                eventDay: item.eventDay
+              });
+
+              if (item.eventStatus) {
+                activeTempData.push({
+                  eventName: item.eventName,
+                  key: item.key,
+                  eventDate: item.eventDate,
+                  eventNote: item.eventNote,
+                  eventCnt: cnt,
+                  eventBadge: item.eventBadge,
+                  eventStatus: item.eventStatus,
+                  eventDay: item.eventDay
+                });
+              }
+
+              itemFlag = true;
+            }
+          }
+
+          if (!itemFlag) {
+            inactiveTempData.push(item);
+            if (item.eventStatus) {
+              activeTempData.push(item);
+            }
+          }
+        });
+
+        setActiveClasses(activeTempData);
+        setInactiveClasses(inactiveTempData);
+        setIsLoading(false);
+      });
+  }, [eveCnt]);
+
   const handleItemClick = item => {
     navigation.navigate("Event");
   };
@@ -262,15 +395,29 @@ function Calendar({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <FlatList
-        data={classes}
-        renderItem={renderItem}
-        keyExtractor={item => item.key}
-        extraData={selectedId}
-        style={styles.flContainer}
-      />
-    </SafeAreaView>
+    <View style={{ flex: 1 }}>
+      {isLoading ? (
+        <View
+          style={{
+            ...StyleSheet.absoluteFill,
+            alignItems: "center",
+            justifyContent: "center"
+          }}
+        >
+          <ActivityIndicator size="large" color="#000" />
+        </View>
+      ) : (
+        <SafeAreaView style={styles.container}>
+          <FlatList
+            data={isInactiveFlag ? inactiveClasses : activeClasses}
+            renderItem={renderItem}
+            keyExtractor={item => item.key}
+            extraData={selectedId}
+            style={styles.flContainer}
+          />
+        </SafeAreaView>
+      )}
+    </View>
   );
 }
 

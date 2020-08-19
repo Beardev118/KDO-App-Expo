@@ -45,7 +45,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontStyle: "italic",
     textAlign: "center",
-    textAlignVertical: "center",
+    textAlignVertical: "center"
+  },
+  plainTextView: {
+    alignSelf: "stretch",
     height: 60,
     backgroundColor: "white",
     borderRadius: 8,
@@ -352,7 +355,16 @@ const Splash = ({ navigation }) => {
       <Text style={styles.titleText}>KDO</Text>
       <Text style={styles.titleText}>PŘIJDE</Text>
       <SplashImage />
-      <Text style={styles.plainText}>Kdo jde dnes na trening?</Text>
+      <View
+        style={{
+          ...styles.plainTextView,
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        <Text style={styles.plainText}>Kdo jde dnes na trening?</Text>
+      </View>
+
       {isLoading ? (
         <View style={styles.btnView}>
           <TouchableOpacity

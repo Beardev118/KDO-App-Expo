@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext } from "react";
 import { View, Text, Switch, StyleSheet } from "react-native";
 // import Menu, { MenuItem, MenuDivider } from "react-native-material-menu";
 import { IconButton, Colors } from "react-native-paper";
@@ -9,6 +9,8 @@ import {
   MenuOption,
   MenuTrigger
 } from "react-native-popup-menu";
+
+import { InactiveContext } from "../../globalState/InactiveState";
 
 const optionsStyles = {
   optionsContainer: {
@@ -37,8 +39,8 @@ const styles = StyleSheet.create({
 });
 
 function CalendarMenu(props) {
-  const [isEnabled, setIsEnabled] = useState(false);
-  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+  const [isInactiveFlag, setIsInactiveFlag] = useContext(InactiveContext);
+  const toggleSwitch = () => setIsInactiveFlag(previousState => !previousState);
   return (
     <Menu>
       <MenuTrigger>
@@ -72,7 +74,7 @@ function CalendarMenu(props) {
               thumbColor={{ false: "#f5dd4b", true: "#f4f3f4" }}
               ios_backgroundColor="#3e3e3e"
               onValueChange={toggleSwitch}
-              value={isEnabled}
+              value={isInactiveFlag}
               style={{ marginLeft: 10 }}
             />
           </View>

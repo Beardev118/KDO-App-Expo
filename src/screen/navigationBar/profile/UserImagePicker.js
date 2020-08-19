@@ -24,12 +24,16 @@ const styles = StyleSheet.create({
   }
 });
 
-export default function UserImagePicker() {
+const useImagePicker = () => {
   const [image, setImage] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [myData, setMyData] = useState(null);
 
   useEffect(() => {
+    const ac = new AbortController();
+    let didUnsubscribe = false;
+
+    if (didUnsubscribe) return;
     (async () => {
       if (Constants.platform.ios) {
         const {
@@ -59,7 +63,25 @@ export default function UserImagePicker() {
         }
       });
     })();
+
+    return () => {
+      ac.abort();
+      didUnsubscribe = true;
+    }; // Abort both fetches on unmount
   }, []);
+
+  return { image, setImage, isLoading, setIsLoading, myData, setMyData };
+};
+
+export default function UserImagePicker() {
+  const {
+    image,
+    setImage,
+    isLoading,
+    setIsLoading,
+    myData,
+    setMyData
+  } = useImagePicker();
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
