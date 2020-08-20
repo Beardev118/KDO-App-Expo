@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
 });
 
 function Login({ navigation }) {
-  const [phoneNumber, onChangePhoneNumber] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [authCode, onChangeAuthCode] = useState("");
   const [verificationId, setVerificationId] = useState(null);
   const recaptchaVerifier = useRef(null);
@@ -92,9 +92,11 @@ function Login({ navigation }) {
   // Function to be called when requesting for a verification code
   const sendVerification = () => {
     if (phoneNumber != "") {
+      const myPhoneNumber = "+420" + phoneNumber;
+      setPhoneNumber(myPhoneNumber);
       const phoneProvider = new firebase.auth.PhoneAuthProvider();
       phoneProvider
-        .verifyPhoneNumber(phoneNumber, recaptchaVerifier.current)
+        .verifyPhoneNumber(myPhoneNumber, recaptchaVerifier.current)
         .then(function(confirmationResult) {
           setVerificationId(confirmationResult);
           setShowBack(true);
@@ -122,7 +124,7 @@ function Login({ navigation }) {
   const initVerification = () => {
     setShowAuth(false);
     setShowBack(false);
-    onChangePhoneNumber("");
+    setPhoneNumber("");
     onChangeAuthCode("");
   };
 
@@ -220,7 +222,7 @@ function Login({ navigation }) {
               </Text>
               <TextInput
                 style={{ ...styles.profileTextInput, width: 185 }}
-                onChangeText={text => onChangePhoneNumber(text)}
+                onChangeText={text => setPhoneNumber(text)}
                 value={phoneNumber}
                 placeholder="777123456"
                 placeholderTextColor="#969696"
