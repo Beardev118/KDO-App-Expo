@@ -93,7 +93,6 @@ function Login({ navigation }) {
   const sendVerification = () => {
     if (phoneNumber != "") {
       const myPhoneNumber = "+420" + phoneNumber;
-      setPhoneNumber(myPhoneNumber);
       const phoneProvider = new firebase.auth.PhoneAuthProvider();
       phoneProvider
         .verifyPhoneNumber(myPhoneNumber, recaptchaVerifier.current)
@@ -112,8 +111,9 @@ function Login({ navigation }) {
   const resendVerification = () => {
     if (phoneNumber != "") {
       const phoneProvider = new firebase.auth.PhoneAuthProvider();
+      const myPhoneNumber = "+420" + phoneNumber;
       phoneProvider
-        .verifyPhoneNumber(phoneNumber, recaptchaVerifier.current)
+        .verifyPhoneNumber(myPhoneNumber, recaptchaVerifier.current)
         .then(function(confirmationResult) {
           onChangeAuthCode("");
           setVerificationId(confirmationResult);

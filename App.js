@@ -27,6 +27,9 @@ const window = Dimensions.get("window");
 
 export default function App() {
   YellowBox.ignoreWarnings(["Setting a timer"]);
+  YellowBox.ignoreWarnings([
+    "Can't perform a React state update on an unmounted component."
+  ]);
   return (
     <View style={{ flex: 1 }}>
       <ThemeContext.Provider value={getTheme(uiTheme)}>

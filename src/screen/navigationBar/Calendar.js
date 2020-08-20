@@ -184,79 +184,97 @@ function Calendar({ navigation }) {
   const [userGData, setUserGData] = useState(null);
 
   useEffect(() => {
-    firebase.auth().onAuthStateChanged(async user => {
-      if (user != null) {
-        // profiles Data
-        const fProfilesUri =
-          FileSystem.documentDirectory + "KDODataProfiles.txt";
-        const rawProfilesData = await FileSystem.readAsStringAsync(
-          fProfilesUri
-        );
-        const profilesData = JSON.parse(rawProfilesData);
+    (async () => {
+      const ac = new AbortController();
+      let didUnsubscribe = false;
+      if (didUnsubscribe) return;
 
-        // userGroups Data
-        const fUserGroupsUri =
-          FileSystem.documentDirectory + "KDODataUserGroups.txt";
-        const rawUserGroupsData = await FileSystem.readAsStringAsync(
-          fUserGroupsUri
-        );
-        const userGroupsData = JSON.parse(rawUserGroupsData);
-
-        setUserGData(userGroupsData);
-
-        const myProfileData = profilesData.find(item => item.key === user.uid);
-
-        const eventsActiveCalendar = [];
-        const eventsInactiveCalendar = [];
-
-        const myUserGroups = myProfileData.memberOf;
-        myUserGroups.forEach(item => {
-          const iUserGroup = userGroupsData.find(
-            ugItem => ugItem.key === item.key
+      firebase.auth().onAuthStateChanged(async user => {
+        if (user != null) {
+          // profiles Data
+          const fProfilesUri =
+            FileSystem.documentDirectory + "KDODataProfiles.txt";
+          const rawProfilesData = await FileSystem.readAsStringAsync(
+            fProfilesUri
           );
-          const ugTitle = iUserGroup.value.name;
+          const profilesData = JSON.parse(rawProfilesData);
 
-          const ugEvents = iUserGroup.events;
-          ugEvents.forEach(ugeItem => {
-            const eveTitle = ugeItem.eveValue.name;
+          // userGroups Data
+          const fUserGroupsUri =
+            FileSystem.documentDirectory + "KDODataUserGroups.txt";
+          const rawUserGroupsData = await FileSystem.readAsStringAsync(
+            fUserGroupsUri
+          );
+          const userGroupsData = JSON.parse(rawUserGroupsData);
 
-            const eveStartDate = ugeItem.eveValue.started.split(",");
-            const eveTime =
-              onChangeEveStr(eveStartDate[1]) +
-              ":" +
-              onChangeEveStr(eveStartDate[0]);
+          setUserGData(userGroupsData);
 
-            const curDay = new Date().getDay();
-            let eveDay = Number(eveStartDate[4]) - curDay;
-            if (eveDay < 0) eveDay += 7;
-            if (eveDay == 0) {
-              const curHour = new Date().getHours();
-              const curMinute = new Date().getMinutes();
-              if (
-                curHour > Number(eveStartDate[1]) ||
-                (curHour == Number(eveStartDate[1]) &&
-                  curMinute >= Number(eveStartDate[0]))
-              )
-                eveDay = 7;
-            }
+          const myProfileData = profilesData.find(
+            item => item.key === user.uid
+          );
 
-            const eveBadge = onChangeEveBadge(eveDay);
-            const eveNote = onChangeEveNote(Number(eveStartDate[4]));
+          const eventsActiveCalendar = [];
+          const eventsInactiveCalendar = [];
 
-            const eDate = new Date().getDate();
-            const eMonth = new Date().getMonth() + 1;
-
-            const eveDate = onChangeEveDate(eDate, eMonth, eveDay);
-
-            const myNotify = ugeItem.notify.find(
-              eveNotiItem => eveNotiItem.key === user.uid
+          const myUserGroups = myProfileData.memberOf;
+          myUserGroups.forEach(item => {
+            const iUserGroup = userGroupsData.find(
+              ugItem => ugItem.key === item.key
             );
+            const ugTitle = iUserGroup.value.name;
 
-            if (myNotify !== undefined) {
-              const isActive = myNotify.notifyValue.active;
+            const ugEvents = iUserGroup.events;
+            ugEvents.forEach(ugeItem => {
+              const eveTitle = ugeItem.eveValue.name;
 
-              if (isActive == true) {
-                eventsActiveCalendar.push({
+              const eveStartDate = ugeItem.eveValue.started.split(",");
+              const eveTime =
+                onChangeEveStr(eveStartDate[1]) +
+                ":" +
+                onChangeEveStr(eveStartDate[0]);
+
+              const curDay = new Date().getDay();
+              let eveDay = Number(eveStartDate[4]) - curDay;
+              if (eveDay < 0) eveDay += 7;
+              if (eveDay == 0) {
+                const curHour = new Date().getHours();
+                const curMinute = new Date().getMinutes();
+                if (
+                  curHour > Number(eveStartDate[1]) ||
+                  (curHour == Number(eveStartDate[1]) &&
+                    curMinute >= Number(eveStartDate[0]))
+                )
+                  eveDay = 7;
+              }
+
+              const eveBadge = onChangeEveBadge(eveDay);
+              const eveNote = onChangeEveNote(Number(eveStartDate[4]));
+
+              const eDate = new Date().getDate();
+              const eMonth = new Date().getMonth() + 1;
+
+              const eveDate = onChangeEveDate(eDate, eMonth, eveDay);
+
+              const myNotify = ugeItem.notify.find(
+                eveNotiItem => eveNotiItem.key === user.uid
+              );
+
+              if (myNotify !== undefined) {
+                const isActive = myNotify.notifyValue.active;
+
+                if (isActive == true) {
+                  eventsActiveCalendar.push({
+                    eventName: ugTitle + " " + eveTitle,
+                    key: ugeItem.key,
+                    eventDate: eveDate + " " + eveTime,
+                    eventNote: eveNote,
+                    eventCnt: 0,
+                    eventBadge: eveBadge,
+                    eventStatus: isActive,
+                    eventDay: eveDay
+                  });
+                }
+                eventsInactiveCalendar.push({
                   eventName: ugTitle + " " + eveTitle,
                   key: ugeItem.key,
                   eventDate: eveDate + " " + eveTime,
@@ -267,90 +285,78 @@ function Calendar({ navigation }) {
                   eventDay: eveDay
                 });
               }
-              eventsInactiveCalendar.push({
-                eventName: ugTitle + " " + eveTitle,
-                key: ugeItem.key,
-                eventDate: eveDate + " " + eveTime,
-                eventNote: eveNote,
-                eventCnt: 0,
-                eventBadge: eveBadge,
-                eventStatus: isActive,
-                eventDay: eveDay
-              });
-            }
+            });
           });
-        });
 
-        eventsActiveCalendar.sort((a, b) => (a.eventDay < b.eventDay ? -1 : 1));
-        eventsInactiveCalendar.sort((a, b) =>
-          a.eventDay < b.eventDay ? -1 : 1
-        );
+          eventsActiveCalendar.sort((a, b) =>
+            a.eventDay < b.eventDay ? -1 : 1
+          );
+          eventsInactiveCalendar.sort((a, b) =>
+            a.eventDay < b.eventDay ? -1 : 1
+          );
 
-        setActiveClasses(eventsActiveCalendar);
-        setInactiveClasses(eventsInactiveCalendar);
-        setEveCnt(prev => !prev);
-      }
-    });
+          setActiveClasses(eventsActiveCalendar);
+          setInactiveClasses(eventsInactiveCalendar);
+          setEveCnt(prev => !prev);
+        }
+      });
+      return () => {
+        ac.abort();
+        didUnsubscribe = true;
+      };
+    })();
   }, []);
 
   useEffect(() => {
-    //Firebase Realtime DB snapshot
-    firebase
-      .database()
-      .ref("/responses")
-      .on("value", snapshot => {
-        // console.log('User data: ', snapshot.val());
-        const resData = snapshot.val();
-        const inactiveTempData = [];
-        const activeTempData = [];
+    (async () => {
+      const ac = new AbortController();
+      let didUnsubscribe = false;
+      if (didUnsubscribe) return;
+      //Firebase Realtime DB snapshot
+      firebase
+        .database()
+        .ref("/responses")
+        .on("value", snapshot => {
+          // console.log('User data: ', snapshot.val());
+          const resData = snapshot.val();
+          const inactiveTempData = [];
+          const activeTempData = [];
 
-        inactiveClasses.forEach(item => {
-          const eveTempData = resData[item.key];
-          const eveDateKey = onChangeKeyDate(item.eventDate);
+          inactiveClasses.forEach(item => {
+            const eveTempData = resData[item.key];
+            const eveDateKey = onChangeKeyDate(item.eventDate);
 
-          let itemFlag = false;
+            let itemFlag = false;
 
-          if (eveTempData !== undefined && eveDateKey !== undefined) {
-            const eveMemData = eveTempData[eveDateKey];
-            if (eveMemData !== undefined) {
-              let cnt = 0;
+            if (eveTempData !== undefined && eveDateKey !== undefined) {
+              const eveMemData = eveTempData[eveDateKey];
+              if (eveMemData !== undefined) {
+                let cnt = 0;
 
-              let eveMembersKey = null;
+                let eveMembersKey = null;
 
-              userGData.forEach(uItem => {
-                const uItemEvents = uItem.events;
-                const tempUItemEvents = uItemEvents.find(
-                  uieItem => uieItem.key === item.key
+                userGData.forEach(uItem => {
+                  const uItemEvents = uItem.events;
+                  const tempUItemEvents = uItemEvents.find(
+                    uieItem => uieItem.key === item.key
+                  );
+                  if (tempUItemEvents !== undefined) {
+                    eveMembersKey = uItem.key;
+                  }
+                });
+
+                const eveMembers = userGData.find(
+                  uItem => uItem.key === eveMembersKey
                 );
-                if (tempUItemEvents !== undefined) {
-                  eveMembersKey = uItem.key;
-                }
-              });
 
-              const eveMembers = userGData.find(
-                uItem => uItem.key === eveMembersKey
-              );
+                eveMembers["members"].forEach(emItem => {
+                  const eveMData = eveMemData[emItem.key];
+                  if (eveMData !== undefined) {
+                    if (eveMData.p >= 80) cnt += 1;
+                  }
+                });
 
-              eveMembers["members"].forEach(emItem => {
-                const eveMData = eveMemData[emItem.key];
-                if (eveMData !== undefined) {
-                  if (eveMData.p >= 80) cnt += 1;
-                }
-              });
-
-              inactiveTempData.push({
-                eventName: item.eventName,
-                key: item.key,
-                eventDate: item.eventDate,
-                eventNote: item.eventNote,
-                eventCnt: cnt,
-                eventBadge: item.eventBadge,
-                eventStatus: item.eventStatus,
-                eventDay: item.eventDay
-              });
-
-              if (item.eventStatus) {
-                activeTempData.push({
+                inactiveTempData.push({
                   eventName: item.eventName,
                   key: item.key,
                   eventDate: item.eventDate,
@@ -360,24 +366,41 @@ function Calendar({ navigation }) {
                   eventStatus: item.eventStatus,
                   eventDay: item.eventDay
                 });
+
+                if (item.eventStatus) {
+                  activeTempData.push({
+                    eventName: item.eventName,
+                    key: item.key,
+                    eventDate: item.eventDate,
+                    eventNote: item.eventNote,
+                    eventCnt: cnt,
+                    eventBadge: item.eventBadge,
+                    eventStatus: item.eventStatus,
+                    eventDay: item.eventDay
+                  });
+                }
+
+                itemFlag = true;
               }
-
-              itemFlag = true;
             }
-          }
 
-          if (!itemFlag) {
-            inactiveTempData.push(item);
-            if (item.eventStatus) {
-              activeTempData.push(item);
+            if (!itemFlag) {
+              inactiveTempData.push(item);
+              if (item.eventStatus) {
+                activeTempData.push(item);
+              }
             }
-          }
+          });
+
+          setActiveClasses(activeTempData);
+          setInactiveClasses(inactiveTempData);
+          setIsLoading(false);
         });
-
-        setActiveClasses(activeTempData);
-        setInactiveClasses(inactiveTempData);
-        setIsLoading(false);
-      });
+      return () => {
+        ac.abort();
+        didUnsubscribe = true;
+      };
+    })();
   }, [eveCnt]);
 
   const handleItemClick = item => {

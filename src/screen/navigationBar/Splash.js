@@ -97,14 +97,16 @@ const Splash = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    firebase.auth().onAuthStateChanged(user => {
-      if (user != null) {
-        setIsLoading(false);
-        readProfiles();
-      } else {
-        setIsLoading(true);
-      }
-    });
+    (async () => {
+      firebase.auth().onAuthStateChanged(user => {
+        if (user != null) {
+          setIsLoading(false);
+          readProfiles();
+        } else {
+          setIsLoading(true);
+        }
+      });
+    })();
   }, []);
 
   function readProfiles() {

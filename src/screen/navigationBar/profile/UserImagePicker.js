@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Button,
   Image,
@@ -29,45 +29,51 @@ const useImagePicker = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [myData, setMyData] = useState(null);
 
+  const _isMounted = useRef(null);
+
   useEffect(() => {
-    const ac = new AbortController();
-    let didUnsubscribe = false;
-
-    if (didUnsubscribe) return;
     (async () => {
-      if (Constants.platform.ios) {
-        const {
-          status
-        } = await ImagePicker.requestCameraRollPermissionsAsync();
-        if (status !== "granted") {
-          alert("Sorry, we need camera roll permissions to make this work!");
-        }
-      }
+      const ac = new AbortController();
+      let didUnsubscribe = false;
 
-      firebase.auth().onAuthStateChanged(async user => {
-        if (user != null) {
-          setMyData(user);
-          await firebase
-            .storage()
-            .ref()
-            .child("profile_images")
-            .child(user.uid)
-            .getDownloadURL()
-            .then(url => {
-              setIsLoading(false);
-              setImage(url);
-            })
-            .catch(error => {
-              setIsLoading(false);
-            });
+      _isMounted.current = false;
+
+      if (_isMounted.current) return;
+
+      (async () => {
+        if (Constants.platform.ios) {
+          const {
+            status
+          } = await ImagePicker.requestCameraRollPermissionsAsync();
+          if (status !== "granted") {
+            alert("Sorry, we need camera roll permissions to make this work!");
+          }
         }
-      });
+
+        firebase.auth().onAuthStateChanged(async user => {
+          if (user != null) {
+            setMyData(user);
+            await firebase
+              .storage()
+              .ref()
+              .child("profile_images")
+              .child(user.uid)
+              .getDownloadURL()
+              .then(url => {
+                setIsLoading(false);
+                setImage(url);
+              })
+              .catch(error => {
+                setIsLoading(false);
+              });
+          }
+        });
+      })();
+      return () => {
+        ac.abort();
+        _isMounted.current = true;
+      }; // Abort both fetches on unmount
     })();
-
-    return () => {
-      ac.abort();
-      didUnsubscribe = true;
-    }; // Abort both fetches on unmount
   }, []);
 
   return { image, setImage, isLoading, setIsLoading, myData, setMyData };

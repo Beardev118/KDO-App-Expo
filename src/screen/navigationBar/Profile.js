@@ -71,34 +71,37 @@ const useFetchProfile = () => {
   const [phoneNumber, setPhoneNumber] = useState("Telefon");
 
   useEffect(() => {
-    const ac = new AbortController();
-    let didUnsubscribe = false;
+    (async () => {
+      const ac = new AbortController();
+      let didUnsubscribe = false;
+      if (didUnsubscribe) return;
+      firebase.auth().onAuthStateChanged(async user => {
+        if (user != null) {
+          // setAuthUser(user);
+          const fProfilesUri =
+            FileSystem.documentDirectory + "KDODataProfiles.txt";
+          const rawProfilesData = await FileSystem.readAsStringAsync(
+            fProfilesUri
+          );
+          const profilesData = JSON.parse(rawProfilesData);
+          const myProfileData = profilesData.find(
+            item => item.key === user.uid
+          );
 
-    if (didUnsubscribe) return;
-    firebase.auth().onAuthStateChanged(async user => {
-      if (user != null) {
-        // setAuthUser(user);
-        const fProfilesUri =
-          FileSystem.documentDirectory + "KDODataProfiles.txt";
-        const rawProfilesData = await FileSystem.readAsStringAsync(
-          fProfilesUri
-        );
-        const profilesData = JSON.parse(rawProfilesData);
-        const myProfileData = profilesData.find(item => item.key === user.uid);
+          const myName = myProfileData.value.username;
 
-        const myName = myProfileData.value.username;
-
-        if (myName != "") {
-          setUserName(myName);
+          if (myName != "") {
+            setUserName(myName);
+          }
+          setPhoneNumber(myProfileData.value.phone);
+          setIsLoading(false);
         }
-        setPhoneNumber(myProfileData.value.phone);
-        setIsLoading(false);
-      }
-    });
-    return () => {
-      ac.abort();
-      didUnsubscribe = true;
-    }; // Abort both fetches on unmount
+      });
+      return () => {
+        ac.abort();
+        didUnsubscribe = true;
+      }; // Abort both fetches on unmount
+    })();
   }, []);
 
   return { isLoading, setIsLoading, userName, setUserName, phoneNumber };
