@@ -341,6 +341,17 @@ function Event({ route, navigation }) {
   );
   const [eventMuteStatus, setEventMuteStatus] = useContext(EventMuteContext);
   const [members, setMembers] = useState([]);
+  const [authMember, setAuthMember] = useState([
+    {
+      key: "",
+      textUserName: "",
+      textMsg: "",
+      textNote: -1,
+      colorNote: "",
+      imgUrl: "",
+      textUserPhoneNumber: ""
+    }
+  ]);
   const [firebaseFlag, setFirebaseFlag] = useState(false);
   const [userProfileData, setUserProfileData] = useState(null);
   const [userName, setUserName] = useState("");
@@ -417,6 +428,7 @@ function Event({ route, navigation }) {
           const resData = snapshot.val();
 
           const memberTempData = [];
+          const authMemberTempData = [];
 
           const eveTempData = resData[key];
           const eveDateKey = onChangeKeyDate(eventDate);
@@ -486,7 +498,7 @@ function Event({ route, navigation }) {
                         .then(url => {
                           memImgUrl = url;
                           if (eveMData !== undefined) {
-                            memberTempData.push({
+                            const memberTempDataItem = {
                               key: emItem.memKey,
                               textUserName: emUserName,
                               textMsg: eveMData.m,
@@ -494,12 +506,15 @@ function Event({ route, navigation }) {
                               colorNote: onCalcColor(eveMData.p),
                               imgUrl: memImgUrl,
                               textUserPhoneNumber: emUserPhoneNumber
-                            });
+                            };
+                            memberTempData.push(memberTempDataItem);
+                            if (emItem.memKey === authUser.uid)
+                              authMemberTempData.push(memberTempDataItem);
                             if (eveMData.p === 100) flCnt += 1;
                             if (eveMData.p < 100 && eveMData.p >= 80)
                               miCnt += 1;
                           } else {
-                            memberTempData.push({
+                            const memberTempDataItem = {
                               key: emItem.memKey,
                               textUserName: emUserName,
                               textMsg: "",
@@ -507,7 +522,10 @@ function Event({ route, navigation }) {
                               colorNote: "",
                               imgUrl: memImgUrl,
                               textUserPhoneNumber: emUserPhoneNumber
-                            });
+                            };
+                            memberTempData.push(memberTempDataItem);
+                            if (emItem.memKey === authUser.uid)
+                              authMemberTempData.push(memberTempDataItem);
                           }
                           eventMembersCount -= 1;
                         })
@@ -516,7 +534,7 @@ function Event({ route, navigation }) {
                         });
                     } else {
                       if (eveMData !== undefined) {
-                        memberTempData.push({
+                        const memberTempDataItem = {
                           key: emItem.memKey,
                           textUserName: emUserName,
                           textMsg: eveMData.m,
@@ -524,11 +542,14 @@ function Event({ route, navigation }) {
                           colorNote: onCalcColor(eveMData.p),
                           imgUrl: memImgUrl,
                           textUserPhoneNumber: emUserPhoneNumber
-                        });
+                        };
+                        memberTempData.push(memberTempDataItem);
+                        if (emItem.memKey === authUser.uid)
+                          authMemberTempData.push(memberTempDataItem);
                         if (eveMData.p === 100) flCnt += 1;
                         if (eveMData.p < 100 && eveMData.p >= 80) miCnt += 1;
                       } else {
-                        memberTempData.push({
+                        const memberTempDataItem = {
                           key: emItem.memKey,
                           textUserName: emUserName,
                           textMsg: "",
@@ -536,7 +557,10 @@ function Event({ route, navigation }) {
                           colorNote: "",
                           imgUrl: memImgUrl,
                           textUserPhoneNumber: emUserPhoneNumber
-                        });
+                        };
+                        memberTempData.push(memberTempDataItem);
+                        if (emItem.memKey === authUser.uid)
+                          authMemberTempData.push(memberTempDataItem);
                       }
                       eventMembersCount -= 1;
                     }
@@ -544,6 +568,7 @@ function Event({ route, navigation }) {
                   if (eventMembersCount === 0) {
                     setSelectedId(prev => !prev);
                     setMembers(memberTempData);
+                    setAuthMember(authMemberTempData);
                     setFullCnt(flCnt);
                     setMiniCnt(miCnt);
                   }
@@ -615,7 +640,7 @@ function Event({ route, navigation }) {
     <SafeAreaView style={styles.container}>
       <TopBar />
       <FlatList
-        data={members}
+        data={eventAllMembersStatus ? members : authMember}
         renderItem={renderItem}
         keyExtractor={item => item.key}
         extraData={selectedId}
