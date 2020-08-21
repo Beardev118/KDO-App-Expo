@@ -1,5 +1,12 @@
 import React, { useContext } from "react";
-import { View, Text, Switch, StyleSheet, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  Switch,
+  StyleSheet,
+  Dimensions,
+  Platform
+} from "react-native";
 // import Menu, { MenuItem, MenuDivider } from "react-native-material-menu";
 import { IconButton, Colors } from "react-native-paper";
 import {
@@ -14,6 +21,7 @@ import { EventActiveContext } from "../../globalState/EventActiveState";
 import { EventMuteContext } from "../../globalState/EventMuteState";
 import { EventAllMembersContext } from "../../globalState/EventAllMembersState";
 import { from } from "rxjs/observable/from";
+import Constants from "expo-constants";
 
 const { ContextMenu, SlideInMenu, Popover, NotAnimatedContextMenu } = renderers;
 
@@ -77,8 +85,8 @@ function EventMenu(props) {
         optionsContainerStyle={{
           marginTop: 60,
           paddingLeft: 8,
-          width: 200,
-          height: window.height - 20
+          width: 220,
+          height: Constants.platform.ios ? window.height : window.height - 20
         }}
       >
         {/* customStyles={optionsStyles} */}
