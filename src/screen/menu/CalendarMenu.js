@@ -64,8 +64,8 @@ function CalendarMenu(props) {
           <Text style={styles.optionText}>Profil</Text>
         </MenuOption>
         <MenuOption
-        //   onSelect={() => alert(`Not called`)}
-        //   disabled={true}
+          onSelect={toggleSwitch}
+          //   disabled={true}
         >
           <View style={{ flexDirection: "row" }}>
             <Text style={styles.optionText}>Zobrazit vše</Text>

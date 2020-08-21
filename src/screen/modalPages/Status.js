@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   Alert,
   Modal,
@@ -12,18 +12,37 @@ import {
   TouchableWithoutFeedback
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-
+import { firebase } from "../../firebase/config";
 import { GlobalContext } from "../../globalState/GlobalState";
 
-function Status() {
+function Status(props) {
   const [modalStatus, setModalStatus] = useContext(GlobalContext);
   const [valueMessage, onChangeMessage] = useState("Možná");
-  const [sliderValue, setSliderValue] = useState(50);
-  const [sliderValueText, setSliderValueText] = useState("50%");
+  const [sliderValue, setSliderValue] = useState(80);
 
-  const setSlider = value => {
-    setSliderValue(value);
-    setSliderValueText(value.toString() + "%");
+  useEffect(() => {
+    if (props.item[0].m !== undefined) onChangeMessage(props.item[0].m);
+    if (props.item[0].p !== undefined && props.item[0].p > -1)
+      setSliderValue(props.item[0].p);
+  }, [modalStatus]);
+
+  const onUpdateStatus = () => {
+    firebase
+      .database()
+      .ref(
+        "/responses/" +
+          props.item[0].eveKey +
+          "/" +
+          props.item[0].eveDateKey +
+          "/" +
+          props.item[0].userKey
+      )
+      .set({
+        m: valueMessage,
+        p: sliderValue,
+        t: Math.trunc(firebase.firestore.Timestamp.now().toMillis() / 1000)
+      })
+      .then(() => setModalStatus(!modalStatus));
   };
 
   return (
@@ -45,7 +64,7 @@ function Status() {
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
               <Text style={styles.textPercent}>Na kolik procent?</Text>
-              <Text style={styles.valuePercent}>{sliderValueText}</Text>
+              <Text style={styles.valuePercent}>{sliderValue}%</Text>
 
               <Slider
                 maximumValue={100}
@@ -55,7 +74,7 @@ function Status() {
                 thumbTintColor="#27842A"
                 step={1}
                 value={sliderValue}
-                onValueChange={sliderValue => setSlider(sliderValue)}
+                onValueChange={sliderValue => setSliderValue(sliderValue)}
                 style={{ width: 250, height: 40, marginHorizontal: 16 }}
               />
 
@@ -90,9 +109,7 @@ function Status() {
                 <View style={{ flex: 0.2 }}>
                   <TouchableOpacity
                     // style={{ ...styles.openButton, flex: 0.2 }}
-                    onPress={() => {
-                      setModalStatus(!modalStatus);
-                    }}
+                    onPress={onUpdateStatus}
                   >
                     <Text style={styles.textStyle}>OK</Text>
                   </TouchableOpacity>

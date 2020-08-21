@@ -11,6 +11,9 @@ import { GlobalState } from "./src/globalState/GlobalState";
 import { SplashState } from "./src/globalState/SplashState";
 import { MemberState } from "./src/globalState/MemberState";
 import { InactiveState } from "./src/globalState/InactiveState";
+import { EventActiveState } from "./src/globalState/EventActiveState";
+import { EventAllMembersState } from "./src/globalState/EventAllMembersState";
+import { EventMuteState } from "./src/globalState/EventMuteState";
 
 const uiTheme = {
   palette: {
@@ -38,7 +41,13 @@ export default function App() {
             <SplashState>
               <GlobalState>
                 <InactiveState>
-                  <AppStart />
+                  <EventActiveState>
+                    <EventAllMembersState>
+                      <EventMuteState>
+                        <AppStart />
+                      </EventMuteState>
+                    </EventAllMembersState>
+                  </EventActiveState>
                 </InactiveState>
               </GlobalState>
             </SplashState>

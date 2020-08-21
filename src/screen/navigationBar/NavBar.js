@@ -24,7 +24,6 @@ import EditTermMenu from "../menu/EditTermMenu";
 import Day from "../modalPages/Day";
 import { SplashContext } from "../../globalState/SplashState";
 import EditUserGroupMenu from "../menu/EditUserGroupMenu";
-
 import UserContacts from "./invite/UserContacts";
 
 const styles = StyleSheet.create({

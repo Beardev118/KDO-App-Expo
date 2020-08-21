@@ -1,5 +1,5 @@
 import "react-native-gesture-handler";
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   FlatList,
   StyleSheet,
@@ -12,11 +12,15 @@ import {
   Image,
   TouchableOpacity
 } from "react-native";
-
+import * as FileSystem from "expo-file-system";
+import { firebase } from "../../firebase/config";
 import Status from "../modalPages/Status";
 import Member from "../modalPages/Member";
 import { GlobalContext } from "../../globalState/GlobalState";
 import { MemberContext } from "../../globalState/MemberState";
+import { EventActiveContext } from "../../globalState/EventActiveState";
+import { EventMuteContext } from "../../globalState/EventMuteState";
+import { EventAllMembersContext } from "../../globalState/EventAllMembersState";
 
 const styles = StyleSheet.create({
   headerRightContainer: {
@@ -47,13 +51,13 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "center",
+    marginVertical: 4
   },
   memberAvartar: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: "#CECECE"
+    borderRadius: 20
   },
   memberName: {
     fontSize: 14,
@@ -77,7 +81,7 @@ const styles = StyleSheet.create({
     height: 44,
     fontSize: 18,
     fontWeight: "bold",
-    color: "#6B6B6B",
+    color: "#FFF",
     textAlign: "right",
     textAlignVertical: "center",
     padding: 10
@@ -189,14 +193,12 @@ const styles = StyleSheet.create({
   statusText: {
     color: "#000",
     textAlign: "center",
-    // fontFamily: "sans-serif-medium",
     fontSize: 14,
     paddingLeft: 10,
     paddingRight: 10
   },
   btnText: {
     color: "#fff",
-    // fontFamily: "sans-serif-medium",
     fontSize: 18,
     fontWeight: "bold",
     textAlign: "center",
@@ -216,15 +218,34 @@ const styles = StyleSheet.create({
   }
 });
 
-const BottomBar = () => {
+const BottomBar = props => {
   const [modalStatus, setModalStatus] = useContext(GlobalContext);
+
+  const onClickYesNo = value => {
+    firebase
+      .database()
+      .ref(
+        "/responses/" +
+          props.item[0].eveKey +
+          "/" +
+          props.item[0].eveDateKey +
+          "/" +
+          props.item[0].userKey
+      )
+      .set({
+        m: props.item[0].m,
+        p: value,
+        t: Math.trunc(firebase.firestore.Timestamp.now().toMillis() / 1000)
+      })
+      .then(() => console.log("Xxx: X"));
+  };
 
   return (
     <View style={styles.bottomBarContainer}>
       <View style={styles.btnView}>
         <TouchableOpacity
           style={styles.btnNo}
-          onPress={() => Alert.alert("No")}
+          onPress={() => onClickYesNo(0)}
           underlayColor="#fff"
         >
           <Text style={styles.btnText}>NE</Text>
@@ -245,7 +266,7 @@ const BottomBar = () => {
       <View style={styles.btnView}>
         <TouchableOpacity
           style={styles.btnYes}
-          onPress={() => Alert.alert("Yes")}
+          onPress={() => onClickYesNo(100)}
           underlayColor="#fff"
         >
           <Text style={styles.btnText}>ANO</Text>
@@ -262,69 +283,288 @@ const Item = ({ item, onPress, style }) => (
   >
     <View key={item.key} style={styles.item}>
       <View style={styles.subContainer}>
-        <Image
-          style={styles.memberAvartar}
-          source={require("../../../assets/badminton.png")}
-        />
+        {item.imgUrl !== "" ? (
+          <Image source={{ uri: item.imgUrl }} style={styles.memberAvartar} />
+        ) : (
+          <Image
+            style={styles.memberAvartar}
+            source={require("../../../assets/useravatar.png")}
+          />
+        )}
         <Text style={styles.memberName}>{item.textUserName}</Text>
         <Text style={styles.memberMsg}>{item.textMsg}</Text>
       </View>
       <View>
-        <Text style={styles.memberNote}>{item.textNote}</Text>
+        {item.textNote >= 0 ? (
+          <Text
+            style={{
+              ...styles.memberNote,
+              backgroundColor: item.colorNote !== "" ? item.colorNote : "#fff"
+            }}
+          >
+            {item.textNote}%
+          </Text>
+        ) : null}
       </View>
     </View>
   </TouchableOpacity>
 );
 
-function Event({ navigation }) {
+const onChangeKeyDate = value => {
+  const curYear = new Date().getFullYear() - 2000;
+  const eveDate = value.split(".");
+  const eveTime = eveDate[2].split(":");
+  const eveHour = eveTime[0].split(" ");
+  return String(curYear) + eveDate[1] + eveDate[0] + eveHour[1] + eveTime[1];
+};
+
+function Event({ route, navigation }) {
+  const {
+    eventName,
+    key,
+    eventDate,
+    eventNote,
+    eventCnt,
+    eventBadge,
+    eventStatus,
+    eventDay,
+    eventMembers
+  } = route.params;
+
   const [selectedId, setSelectedId] = useState(null);
   const [modalMemberStatus, setModalMemberStatus] = useContext(MemberContext);
-  const [members, setMembers] = useState([
+  const [eventActiveStatus, setEventActiveStatus] = useContext(
+    EventActiveContext
+  );
+  const [eventAllMembersStatus, setEventAllMembersStatus] = useContext(
+    EventAllMembersContext
+  );
+  const [eventMuteStatus, setEventMuteStatus] = useContext(EventMuteContext);
+  const [members, setMembers] = useState([]);
+  const [firebaseFlag, setFirebaseFlag] = useState(false);
+  const [userProfileData, setUserProfileData] = useState(null);
+  const [userName, setUserName] = useState("");
+  const [userPhoneNumber, setUserPhoneNumber] = useState("");
+  const [userMsg, setUserMsg] = useState("");
+  const [userImgUrl, setUserImgUrl] = useState("");
+  const [userItem, setUserItem] = useState([
     {
-      avatarId: "test 01",
-      key: "1",
-      textUserName: "test 01",
-      textMsg: "AAA",
-      textNote: "100%"
-    },
-    {
-      avatarId: "test 02",
-      key: "2",
-      textUserName: "test 02",
-      textMsg: "AAA",
-      textNote: "30%"
-    },
-    {
-      avatarId: "test 03",
-      key: "3",
-      textUserName: "test 03",
-      textMsg: "AAA",
-      textNote: "100%"
-    },
-    {
-      avatarId: "test 04",
-      key: "4",
-      textUserName: "test 04",
-      textMsg: "AAAFADFASF",
-      textNote: "70%"
-    },
-    {
-      avatarId: "test 05",
-      key: "5",
-      textUserName: "test 05",
-      textMsg: "AAA",
-      textNote: "50%"
+      eveKey: "",
+      eveDateKey: "",
+      userKey: "",
+      m: "",
+      p: -1
     }
   ]);
-  const [isEnabled, setIsEnabled] = useState(false);
-  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+  const [fullCnt, setFullCnt] = useState(0);
+  const [miniCnt, setMiniCnt] = useState(0);
+  const [authUser, setAuthUser] = useState(null);
+  const toggleSwitch = () =>
+    setEventActiveStatus(previousState => !previousState);
+
+  const onCalcColor = value => {
+    if (value >= 80) return "#27842A";
+    else if (value < 80 && value >= 50) return "#4CAF50";
+    else if (value < 50 && value >= 20) return "#FFA726";
+    else if (value < 20 && value >= 0) return "#E65100";
+  };
+
+  useEffect(() => {
+    (async () => {
+      const ac = new AbortController();
+      let didUnsubscribe = false;
+      if (didUnsubscribe) return;
+
+      // profiles Data
+      const fProfilesUri = FileSystem.documentDirectory + "KDODataProfiles.txt";
+      const rawProfilesData = await FileSystem.readAsStringAsync(fProfilesUri);
+      const profilesData = JSON.parse(rawProfilesData);
+      setUserProfileData(profilesData);
+      setEventActiveStatus(eventStatus);
+
+      // userGroups Data
+      const fUserGroupsUri =
+        FileSystem.documentDirectory + "KDODataUserGroups.txt";
+      const rawUserGroupsData = await FileSystem.readAsStringAsync(
+        fUserGroupsUri
+      );
+      const userGroupsData = JSON.parse(rawUserGroupsData);
+
+      firebase.auth().onAuthStateChanged(user => {
+        setAuthUser(user);
+        setFirebaseFlag(prev => !prev);
+      });
+
+      return () => {
+        ac.abort();
+        didUnsubscribe = true;
+      };
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const ac = new AbortController();
+      let didUnsubscribe = false;
+      if (didUnsubscribe) return;
+
+      //Firebase Realtime DB snapshot
+      firebase
+        .database()
+        .ref("/responses")
+        .on("value", async snapshot => {
+          // console.log('User data: ', snapshot.val());
+          const resData = snapshot.val();
+
+          const memberTempData = [];
+
+          const eveTempData = resData[key];
+          const eveDateKey = onChangeKeyDate(eventDate);
+
+          let itemFlag = false;
+
+          if (eveTempData !== undefined && eveDateKey !== undefined) {
+            const eveMemData = eveTempData[eveDateKey];
+            if (eveMemData !== undefined) {
+              if (eventMembers !== undefined) {
+                let flCnt = 0;
+                let miCnt = 0;
+
+                let eventMembersCount = 0;
+                eventMembers.forEach(emItem => {
+                  eventMembersCount += 1;
+                });
+
+                await eventMembers.forEach(async emItem => {
+                  const eveMData = eveMemData[emItem.memKey];
+
+                  const authUserData = [];
+                  if (authUser !== null) {
+                    if (emItem.memKey === authUser.uid) {
+                      if (eveMData !== undefined) {
+                        authUserData.push({
+                          eveKey: key,
+                          eveDateKey: eveDateKey,
+                          userKey: emItem.memKey,
+                          m: eveMData.m,
+                          p: eveMData.p
+                        });
+                      } else {
+                        authUserData.push({
+                          eveKey: key,
+                          eveDateKey: eveDateKey,
+                          userKey: emItem.memKey,
+                          m: "",
+                          p: -1
+                        });
+                      }
+
+                      setUserItem(authUserData);
+                    }
+                  }
+
+                  let memImgUrl = "";
+                  let emProfileData;
+                  let emUserName = "";
+                  let emUserPhoneNumber = "";
+                  if (userProfileData !== null) {
+                    emProfileData = userProfileData.find(
+                      upItem => upItem.key === emItem.memKey
+                    );
+                  }
+
+                  if (emProfileData !== undefined) {
+                    emUserName = emProfileData.value.username;
+                    emUserPhoneNumber = emProfileData.value.phone;
+                    if (emProfileData.value.hasPhoto) {
+                      await firebase
+                        .storage()
+                        .ref()
+                        .child("profile_images")
+                        .child(emItem.memKey)
+                        .getDownloadURL()
+                        .then(url => {
+                          memImgUrl = url;
+                          if (eveMData !== undefined) {
+                            memberTempData.push({
+                              key: emItem.memKey,
+                              textUserName: emUserName,
+                              textMsg: eveMData.m,
+                              textNote: eveMData.p,
+                              colorNote: onCalcColor(eveMData.p),
+                              imgUrl: memImgUrl,
+                              textUserPhoneNumber: emUserPhoneNumber
+                            });
+                            if (eveMData.p === 100) flCnt += 1;
+                            if (eveMData.p < 100 && eveMData.p >= 80)
+                              miCnt += 1;
+                          } else {
+                            memberTempData.push({
+                              key: emItem.memKey,
+                              textUserName: emUserName,
+                              textMsg: "",
+                              textNote: -1,
+                              colorNote: "",
+                              imgUrl: memImgUrl,
+                              textUserPhoneNumber: emUserPhoneNumber
+                            });
+                          }
+                          eventMembersCount -= 1;
+                        })
+                        .catch(error => {
+                          memImgUrl = "";
+                        });
+                    } else {
+                      if (eveMData !== undefined) {
+                        memberTempData.push({
+                          key: emItem.memKey,
+                          textUserName: emUserName,
+                          textMsg: eveMData.m,
+                          textNote: eveMData.p,
+                          colorNote: onCalcColor(eveMData.p),
+                          imgUrl: memImgUrl,
+                          textUserPhoneNumber: emUserPhoneNumber
+                        });
+                        if (eveMData.p === 100) flCnt += 1;
+                        if (eveMData.p < 100 && eveMData.p >= 80) miCnt += 1;
+                      } else {
+                        memberTempData.push({
+                          key: emItem.memKey,
+                          textUserName: emUserName,
+                          textMsg: "",
+                          textNote: -1,
+                          colorNote: "",
+                          imgUrl: memImgUrl,
+                          textUserPhoneNumber: emUserPhoneNumber
+                        });
+                      }
+                      eventMembersCount -= 1;
+                    }
+                  }
+                  if (eventMembersCount === 0) {
+                    setSelectedId(prev => !prev);
+                    setMembers(memberTempData);
+                    setFullCnt(flCnt);
+                    setMiniCnt(miCnt);
+                  }
+                });
+              }
+            }
+          }
+        });
+      return () => {
+        ac.abort();
+        didUnsubscribe = true;
+      };
+    })();
+  }, [firebaseFlag]);
 
   const TopBar = () => (
     <View style={{ backgroundColor: "#E9E6DD" }}>
       <View style={{ height: 8 }} />
       <View style={styles.topBarContainer}>
         <View style={styles.topBarSubView}>
-          <Text style={styles.eventName}>BADMINTON</Text>
+          <Text style={styles.eventName}>{eventName}</Text>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Text style={styles.switchActive}>neaktivní</Text>
             <Switch
@@ -332,24 +572,40 @@ function Event({ navigation }) {
               thumbColor={{ false: "#f5dd4b", true: "#f4f3f4" }}
               ios_backgroundColor="#3e3e3e"
               onValueChange={toggleSwitch}
-              value={isEnabled}
+              value={eventActiveStatus}
             />
           </View>
         </View>
-        <Text style={styles.eventTime}>KTTT</Text>
+        <Text style={styles.eventTime}>
+          Kdy: {eventNote} {eventDate}
+        </Text>
         <View style={styles.topBarSubView}>
           <Text style={styles.eventMembers}>Kdo přijde:</Text>
-          <Text style={styles.eventAttend}>uar 3</Text>
+          {miniCnt > 0 ? (
+            <Text style={styles.eventAttend}>
+              Účast {fullCnt}-{miniCnt}lidí
+            </Text>
+          ) : (
+            <Text style={styles.eventAttend}>Účast {fullCnt}lidí</Text>
+          )}
         </View>
       </View>
     </View>
   );
 
+  const onChangeModalStatus = value => {
+    setUserName(value.textUserName);
+    setUserPhoneNumber(value.textUserPhoneNumber);
+    setUserImgUrl(value.imgUrl);
+    setUserMsg(value.textMsg);
+    setModalMemberStatus(true);
+  };
+
   const renderItem = ({ item }) => {
     return (
       <Item
         item={item}
-        onPress={() => setModalMemberStatus(true)}
+        onPress={() => onChangeModalStatus(item)}
         style={styles.item}
       />
     );
@@ -365,9 +621,14 @@ function Event({ navigation }) {
         extraData={selectedId}
         style={styles.flContainer}
       />
-      <BottomBar />
-      <Status />
-      <Member />
+      <BottomBar item={userItem} />
+      <Status item={userItem} />
+      <Member
+        imageUrl={userImgUrl}
+        name={userName}
+        phoneNumber={userPhoneNumber}
+        msg={userMsg}
+      />
     </SafeAreaView>
   );
 }

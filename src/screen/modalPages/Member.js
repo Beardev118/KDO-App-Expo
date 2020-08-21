@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   Alert,
   Modal,
@@ -17,10 +17,14 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 
 import { MemberContext } from "../../globalState/MemberState";
 
-function Member() {
+function Member(props) {
   const [modalMemberStatus, setModalMemberStatus] = useContext(MemberContext);
 
-  const [valueMessage, onChangeMessage] = useState("Možná");
+  const [valueMessage, onChangeMessage] = useState("");
+
+  useEffect(() => {
+    onChangeMessage(props.msg);
+  }, [modalMemberStatus]);
 
   return (
     <Modal
@@ -46,10 +50,17 @@ function Member() {
                   alignSelf: "stretch"
                 }}
               >
-                <Image
-                  style={styles.imageUserAvatar}
-                  source={require("../../../assets/badminton.png")}
-                />
+                {props.imageUrl !== "" ? (
+                  <Image
+                    source={{ uri: props.imageUrl }}
+                    style={styles.imageUserAvatar}
+                  />
+                ) : (
+                  <Image
+                    style={styles.imageUserAvatar}
+                    source={require("../../../assets/useravatar.png")}
+                  />
+                )}
                 <View
                   style={{
                     flexDirection: "column",
@@ -58,8 +69,10 @@ function Member() {
                     justifyContent: "space-around"
                   }}
                 >
-                  <Text style={styles.textUserName}>Na kolik procent?</Text>
-                  <Text style={styles.textPhoneNumber}>771123212</Text>
+                  <Text style={styles.textUserName}>{props.name}</Text>
+                  <Text style={styles.textPhoneNumber}>
+                    {props.phoneNumber}
+                  </Text>
                 </View>
               </View>
 
@@ -91,9 +104,7 @@ function Member() {
               >
                 <View style={{ flex: 0.3 }}>
                   <TouchableOpacity
-                    onPress={() => {
-                      setModalMemberStatus(!modalMemberStatus);
-                    }}
+                    onPress={() => setModalMemberStatus(!modalMemberStatus)}
                   >
                     <Text style={styles.textStyle}>CANCEL</Text>
                   </TouchableOpacity>
@@ -136,11 +147,13 @@ const styles = StyleSheet.create({
   textUserName: {
     fontSize: 22,
     color: "#000",
-    textAlign: "center"
+    textAlign: "left",
+    paddingHorizontal: 12
   },
   textPhoneNumber: {
     fontSize: 24,
-    color: "#6B6B6B"
+    color: "#6B6B6B",
+    paddingHorizontal: 12
   },
   textInputMessage: {
     padding: 4,

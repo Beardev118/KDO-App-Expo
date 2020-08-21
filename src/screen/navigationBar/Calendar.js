@@ -223,6 +223,15 @@ function Calendar({ navigation }) {
             );
             const ugTitle = iUserGroup.value.name;
 
+            const eventMembers = [];
+            const ugMembers = iUserGroup.members;
+            ugMembers.forEach(ugmItem => {
+              eventMembers.push({
+                memKey: ugmItem.key,
+                memActive: ugmItem.active.active
+              });
+            });
+
             const ugEvents = iUserGroup.events;
             ugEvents.forEach(ugeItem => {
               const eveTitle = ugeItem.eveValue.name;
@@ -271,7 +280,8 @@ function Calendar({ navigation }) {
                     eventCnt: 0,
                     eventBadge: eveBadge,
                     eventStatus: isActive,
-                    eventDay: eveDay
+                    eventDay: eveDay,
+                    eventMembers: eventMembers
                   });
                 }
                 eventsInactiveCalendar.push({
@@ -282,7 +292,8 @@ function Calendar({ navigation }) {
                   eventCnt: 0,
                   eventBadge: eveBadge,
                   eventStatus: isActive,
-                  eventDay: eveDay
+                  eventDay: eveDay,
+                  eventMembers: eventMembers
                 });
               }
             });
@@ -332,29 +343,16 @@ function Calendar({ navigation }) {
               const eveMemData = eveTempData[eveDateKey];
               if (eveMemData !== undefined) {
                 let cnt = 0;
+                const eveMembers = item.eventMembers;
 
-                let eveMembersKey = null;
-
-                userGData.forEach(uItem => {
-                  const uItemEvents = uItem.events;
-                  const tempUItemEvents = uItemEvents.find(
-                    uieItem => uieItem.key === item.key
-                  );
-                  if (tempUItemEvents !== undefined) {
-                    eveMembersKey = uItem.key;
-                  }
-                });
-
-                const eveMembers = userGData.find(
-                  uItem => uItem.key === eveMembersKey
-                );
-
-                eveMembers["members"].forEach(emItem => {
-                  const eveMData = eveMemData[emItem.key];
-                  if (eveMData !== undefined) {
-                    if (eveMData.p >= 80) cnt += 1;
-                  }
-                });
+                if (eveMembers !== undefined) {
+                  eveMembers.forEach(emItem => {
+                    const eveMData = eveMemData[emItem.memKey];
+                    if (eveMData !== undefined) {
+                      if (eveMData.p >= 80) cnt += 1;
+                    }
+                  });
+                }
 
                 inactiveTempData.push({
                   eventName: item.eventName,
@@ -364,7 +362,8 @@ function Calendar({ navigation }) {
                   eventCnt: cnt,
                   eventBadge: item.eventBadge,
                   eventStatus: item.eventStatus,
-                  eventDay: item.eventDay
+                  eventDay: item.eventDay,
+                  eventMembers: item.eventMembers
                 });
 
                 if (item.eventStatus) {
@@ -376,7 +375,8 @@ function Calendar({ navigation }) {
                     eventCnt: cnt,
                     eventBadge: item.eventBadge,
                     eventStatus: item.eventStatus,
-                    eventDay: item.eventDay
+                    eventDay: item.eventDay,
+                    eventMembers: item.eventMembers
                   });
                 }
 
@@ -404,13 +404,22 @@ function Calendar({ navigation }) {
   }, [eveCnt]);
 
   const handleItemClick = item => {
-    navigation.navigate("Event");
+    navigation.navigate("Event", {
+      eventName: item.eventName,
+      key: item.key,
+      eventDate: item.eventDate,
+      eventNote: item.eventNote,
+      eventCnt: item.eventCnt,
+      eventBadge: item.eventBadge,
+      eventStatus: item.eventStatus,
+      eventDay: item.eventDay,
+      eventMembers: item.eventMembers
+    });
   };
   const renderItem = ({ item }) => {
     return (
       <Item
         item={item}
-        // onPress={() => console.log(item.key)}
         onPress={() => handleItemClick(item)}
         style={styles.item}
       />
