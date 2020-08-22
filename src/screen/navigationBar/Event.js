@@ -590,16 +590,6 @@ function Event({ route, navigation }) {
       <View style={styles.topBarContainer}>
         <View style={styles.topBarSubView}>
           <Text style={styles.eventName}>{eventName}</Text>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={styles.switchActive}>neaktivní</Text>
-            <Switch
-              trackColor={{ false: "#767577", true: "#81b0ff" }}
-              thumbColor={{ false: "#f5dd4b", true: "#f4f3f4" }}
-              ios_backgroundColor="#3e3e3e"
-              onValueChange={toggleSwitch}
-              value={eventActiveStatus}
-            />
-          </View>
         </View>
         <Text style={styles.eventTime}>
           Kdy: {eventNote} {eventDate}

@@ -95,9 +95,7 @@ function EventMenu(props) {
           //   disabled={true}
         >
           <View style={{ flexDirection: "row" }}>
-            <Text style={{ ...styles.optionText, width: 140 }}>
-              Active / Inactive
-            </Text>
+            <Text style={{ ...styles.optionText, width: 140 }}>neaktivní</Text>
             <Switch
               trackColor={{ false: "#767577", true: "#81b0ff" }}
               thumbColor={{ false: "#f5dd4b", true: "#f4f3f4" }}
@@ -113,7 +111,7 @@ function EventMenu(props) {
           //   disabled={true}
         >
           <View style={{ flexDirection: "row" }}>
-            <Text style={{ ...styles.optionText, width: 140 }}>Mute</Text>
+            <Text style={{ ...styles.optionText, width: 140 }}>askBefore</Text>
             <Switch
               trackColor={{ false: "#767577", true: "#81b0ff" }}
               thumbColor={{ false: "#f5dd4b", true: "#f4f3f4" }}
