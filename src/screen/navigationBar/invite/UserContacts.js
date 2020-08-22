@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -6,14 +6,17 @@ import {
   TextInput,
   SafeAreaView,
   FlatList,
-  ActivityIndicator
+  ActivityIndicator,
+  TouchableOpacity
 } from "react-native";
 import * as Contacts from "expo-contacts";
+import { InviteNumberContext } from "../../../globalState/InviteNumberState";
 
-export default function UserContacts() {
+export default function UserContacts({ navigation }) {
   const [isLoading, setIsLoading] = useState(true);
   const [contacts, setContacts] = useState([]);
   const [inMemoryContacts, setInMemoryContacts] = useState([]);
+  const [inviteNumber, setInviteNumber] = useContext(InviteNumberContext);
 
   useEffect(() => {
     (async () => {
@@ -33,6 +36,18 @@ export default function UserContacts() {
     })();
   }, []);
 
+  const onSelectInviteNumber = value => {
+    const strLen = value.length;
+    let numTemp = "";
+
+    for (let i = 0; i < strLen; i++) {
+      if (Number(value[i]) >= 0 && Number(value[i]) < 10 && value[i] !== " ")
+        numTemp += value[i];
+    }
+    setInviteNumber(numTemp.slice(3));
+    navigation.goBack();
+  };
+
   const renderItem = ({ item }) => (
     <View
       style={{
@@ -43,13 +58,17 @@ export default function UserContacts() {
         borderBottomWidth: 0.5
       }}
     >
-      <Text style={{ color: "#000", fontWeight: "bold", fontSize: 16 }}>
-        {item.firstName + " "}
-        {item.lastName}
-      </Text>
-      <Text style={{ color: "#969696", fontWeight: "bold" }}>
-        {item.phoneNumbers[0].number}
-      </Text>
+      <TouchableOpacity
+        onPress={() => onSelectInviteNumber(item.phoneNumbers[0].number)}
+      >
+        <Text style={{ color: "#000", fontWeight: "bold", fontSize: 16 }}>
+          {item.firstName + " "}
+          {item.lastName}
+        </Text>
+        <Text style={{ color: "#969696", fontWeight: "bold" }}>
+          {item.phoneNumbers[0].number}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 

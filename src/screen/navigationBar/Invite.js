@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   SafeAreaView,
   ScrollView,
@@ -14,6 +14,7 @@ import {
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { IconButton, Colors } from "react-native-paper";
 import * as Progress from "react-native-progress";
+import { InviteNumberContext } from "../../globalState/InviteNumberState";
 
 const styles = StyleSheet.create({
   container: {
@@ -85,7 +86,16 @@ const styles = StyleSheet.create({
 
 function Invite({ navigation }) {
   const [valueMessage, onChangeMessage] = useState("Možná");
-  const [phoneNumber, onChangePhoneNumber] = useState("");
+  const [inviteNumber, setInviteNumber] = useContext(InviteNumberContext);
+  const [isNextFlag, setIsNextFlag] = useState(false);
+  const [isNextBtnFlag, setIsNextBtnFlag] = useState(true);
+  const [isSMSFlag, setIsSMSFlag] = useState(false);
+  const [progressValue, setProgressValue] = useState(0);
+
+  const onClickNext = () => {
+    setIsNextFlag(true);
+    setProgressValue(1);
+  };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -120,10 +130,11 @@ function Invite({ navigation }) {
               <Text style={styles.prefix}>+420</Text>
               <TextInput
                 style={styles.phoneNumberInput}
-                onChangeText={text => onChangePhoneNumber(text)}
-                value={phoneNumber}
+                onChangeText={text => setInviteNumber(text)}
+                value={inviteNumber}
                 placeholder="777123456"
                 placeholderTextColor="#969696"
+                keyboardType="phone-pad"
               />
               <IconButton
                 icon="account"
@@ -133,58 +144,72 @@ function Invite({ navigation }) {
                 onPress={() => navigation.navigate("UserContacts")}
               />
             </View>
-            <View style={styles.btnView}>
-              <TouchableOpacity
-                style={{ ...styles.inviteScreenButton, marginTop: 32 }}
-                onPress={() => Alert.alert("Simple Button pressed")}
-                underlayColor="#fff"
-              >
-                <Text style={styles.btnText}>Pokračovat</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={{ alignItems: "center", marginTop: 12 }}>
-              <Text style={{ fontSize: 14, color: "#6B6B6B" }}>
-                Ověřuji číslovc
-              </Text>
-              <Progress.Bar
-                progress={0.3}
-                width={200}
-                color={"rgba(0, 0, 0, 0.6)"}
-              />
-            </View>
-            <View style={{ alignItems: "center", marginTop: 36 }}>
-              <Text style={{ color: "#6B6B6B", fontSize: 18 }}>
-                Informujte uživatele SMSkou
-              </Text>
-              <TextInput
-                multiline
-                numberOfLines={4}
-                style={styles.messageInput}
-                onChangeText={text => onChangeMessage(text)}
-                value={valueMessage}
-              />
-              <TouchableOpacity
-                style={{ ...styles.inviteScreenButton, marginTop: 8 }}
-                onPress={() => Alert.alert("Simple Button pressed")}
-                underlayColor="#fff"
-              >
-                <Text style={styles.btnText}>Odeslat SMS</Text>
-              </TouchableOpacity>
-              <Text style={{ color: "#27842A" }}>Pozvánka byla vytvořena.</Text>
-              <View
-                style={{
-                  backgroundColor: "#FFFDE7",
-                  padding: 4,
-                  borderRadius: 6,
-                  marginTop: 4,
-                  marginBottom: 8
-                }}
-              >
-                <Text style={{ color: "#6B6B6B" }}>
-                  Uživatel si pozvánku přečte v aplikaci.
-                </Text>
+            {isNextBtnFlag ? (
+              <View style={styles.btnView}>
+                <TouchableOpacity
+                  style={{ ...styles.inviteScreenButton, marginTop: 24 }}
+                  onPress={onClickNext}
+                  underlayColor="#fff"
+                >
+                  <Text style={styles.btnText}>Pokračovat</Text>
+                </TouchableOpacity>
               </View>
-            </View>
+            ) : null}
+            {isNextFlag ? (
+              <View style={{ alignItems: "center", marginTop: 12 }}>
+                <Text style={{ fontSize: 14, color: "#6B6B6B" }}>
+                  Ověřuji číslovc
+                </Text>
+                <Progress.Bar
+                  style={{ marginTop: 8 }}
+                  progress={progressValue}
+                  width={160}
+                  color={"rgba(0, 0, 0, 0.6)"}
+                  animated={true}
+                  indeterminate={true}
+                  indeterminateAnimationDuration={2000}
+                  animationType={"timing"}
+                />
+              </View>
+            ) : null}
+
+            {isSMSFlag ? (
+              <View style={{ alignItems: "center", marginTop: 36 }}>
+                <Text style={{ color: "#6B6B6B", fontSize: 18 }}>
+                  Informujte uživatele SMSkou
+                </Text>
+                <TextInput
+                  multiline
+                  numberOfLines={4}
+                  style={styles.messageInput}
+                  onChangeText={text => onChangeMessage(text)}
+                  value={valueMessage}
+                />
+                <TouchableOpacity
+                  style={{ ...styles.inviteScreenButton, marginTop: 8 }}
+                  onPress={() => Alert.alert("Simple Button pressed")}
+                  underlayColor="#fff"
+                >
+                  <Text style={styles.btnText}>Odeslat SMS</Text>
+                </TouchableOpacity>
+                <Text style={{ color: "#27842A" }}>
+                  Pozvánka byla vytvořena.
+                </Text>
+                <View
+                  style={{
+                    backgroundColor: "#FFFDE7",
+                    padding: 4,
+                    borderRadius: 6,
+                    marginTop: 4,
+                    marginBottom: 8
+                  }}
+                >
+                  <Text style={{ color: "#6B6B6B" }}>
+                    Uživatel si pozvánku přečte v aplikaci.
+                  </Text>
+                </View>
+              </View>
+            ) : null}
           </SafeAreaView>
         </ScrollView>
       </KeyboardAwareScrollView>

@@ -1,5 +1,5 @@
 import "react-native-gesture-handler";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FlatList,
   StyleSheet,
@@ -14,6 +14,8 @@ import {
 } from "react-native";
 import { IconButton, Colors } from "react-native-paper";
 import EditTerm from "./EditTerm";
+import * as FileSystem from "expo-file-system";
+import { firebase } from "../../firebase/config";
 
 const styles = StyleSheet.create({
   headerRightContainer: {
@@ -222,6 +224,28 @@ const Item = ({ item, onPress, style }) => (
   </TouchableOpacity>
 );
 
+const onChangeEveNote = value => {
+  const dayNote = [
+    "",
+    "Pondělí",
+    "Úterý",
+    "Středa",
+    "Čtvrtek",
+    "Pátek",
+    "Sobota",
+    "Neděle"
+  ];
+  return dayNote[value];
+};
+
+const onChangeEveStr = value => {
+  let strTemp = value;
+  if (Number(strTemp) < 10) {
+    strTemp = "0" + strTemp;
+  }
+  return strTemp;
+};
+
 function EventManager({ navigation }) {
   const [selectedId, setSelectedId] = useState(null);
   const [members, setMembers] = useState([
@@ -261,6 +285,183 @@ function EventManager({ navigation }) {
       textEventTime: "16:00"
     }
   ]);
+
+  useEffect(() => {
+    (async () => {
+      const ac = new AbortController();
+      let didUnsubscribe = false;
+      if (didUnsubscribe) return;
+
+      firebase.auth().onAuthStateChanged(async user => {
+        if (user != null) {
+          // profiles Data
+          const fProfilesUri =
+            FileSystem.documentDirectory + "KDODataProfiles.txt";
+          const rawProfilesData = await FileSystem.readAsStringAsync(
+            fProfilesUri
+          );
+          const profilesData = JSON.parse(rawProfilesData);
+
+          // userGroups Data
+          const fUserGroupsUri =
+            FileSystem.documentDirectory + "KDODataUserGroups.txt";
+          const rawUserGroupsData = await FileSystem.readAsStringAsync(
+            fUserGroupsUri
+          );
+          const userGroupsData = JSON.parse(rawUserGroupsData);
+
+          // setUserGData(userGroupsData);
+
+          const ownerUserGroupData = [];
+
+          const myProfileData = profilesData.find(
+            item => item.key === user.uid
+          );
+
+          const myOwnerEventsData = myProfileData.value.ownerOf;
+
+          if (myOwnerEventsData.length > 0) {
+            myOwnerEventsData.forEach(item => {
+              const userGroup = userGroupsData.find(
+                ugItem => ugItem.key === item
+              );
+              console.log(userGroup);
+
+              const userGroupEventsData = [];
+              const userGroupEvents = userGroup.events;
+
+              if (userGroupEvents !== undefined) {
+                userGroupEvents.forEach(ugeItem => {
+                  const eveDate = ugeItem.eveValue.started.split(",");
+
+                  userGroupEventsData.push({
+                    eventKey: ugeItem.key,
+                    eventName: ugeItem.eveValue.name,
+                    eventDay: onChangeEveNote(Number(eveDate[4])),
+                    eventTime:
+                      onChangeEveStr(eveDate[1]) +
+                      ":" +
+                      onChangeEveStr(eveDate[0]),
+                    eventInfo: ugeItem.eveValue.info
+                  });
+                });
+              }
+
+              ownerUserGroupData.push({
+                userGroupKey: item,
+                userGroupName: userGroup.value.name,
+                userGroupType: userGroup.value.type,
+                userGroupEvents: userGroupEventsData
+              });
+            });
+          }
+
+          console.log(ownerUserGroupData);
+
+          // const eventsActiveCalendar = [];
+          // const eventsInactiveCalendar = [];
+
+          // const myUserGroups = myProfileData.memberOf;
+          // myUserGroups.forEach(item => {
+          //   const iUserGroup = userGroupsData.find(
+          //     ugItem => ugItem.key === item.key
+          //   );
+          //   const ugTitle = iUserGroup.value.name;
+
+          //   const eventMembers = [];
+          //   const ugMembers = iUserGroup.members;
+          //   ugMembers.forEach(ugmItem => {
+          //     eventMembers.push({
+          //       memKey: ugmItem.key,
+          //       memActive: ugmItem.active.active
+          //     });
+          //   });
+
+          //   const ugEvents = iUserGroup.events;
+          //   ugEvents.forEach(ugeItem => {
+          //     const eveTitle = ugeItem.eveValue.name;
+
+          //     const eveStartDate = ugeItem.eveValue.started.split(",");
+          //     const eveTime =
+          //       onChangeEveStr(eveStartDate[1]) +
+          //       ":" +
+          //       onChangeEveStr(eveStartDate[0]);
+
+          //     const curDay = new Date().getDay();
+          //     let eveDay = Number(eveStartDate[4]) - curDay;
+          //     if (eveDay < 0) eveDay += 7;
+          //     if (eveDay == 0) {
+          //       const curHour = new Date().getHours();
+          //       const curMinute = new Date().getMinutes();
+          //       if (
+          //         curHour > Number(eveStartDate[1]) ||
+          //         (curHour == Number(eveStartDate[1]) &&
+          //           curMinute >= Number(eveStartDate[0]))
+          //       )
+          //         eveDay = 7;
+          //     }
+
+          //     const eveBadge = onChangeEveBadge(eveDay);
+          //     const eveNote = onChangeEveNote(Number(eveStartDate[4]));
+
+          //     const eDate = new Date().getDate();
+          //     const eMonth = new Date().getMonth() + 1;
+
+          //     const eveDate = onChangeEveDate(eDate, eMonth, eveDay);
+
+          //     const myNotify = ugeItem.notify.find(
+          //       eveNotiItem => eveNotiItem.key === user.uid
+          //     );
+
+          //     if (myNotify !== undefined) {
+          //       const isActive = myNotify.notifyValue.active;
+
+          //       if (isActive == true) {
+          //         eventsActiveCalendar.push({
+          //           eventName: ugTitle + " " + eveTitle,
+          //           key: ugeItem.key,
+          //           eventDate: eveDate + " " + eveTime,
+          //           eventNote: eveNote,
+          //           eventCnt: 0,
+          //           eventBadge: eveBadge,
+          //           eventStatus: isActive,
+          //           eventDay: eveDay,
+          //           eventMembers: eventMembers
+          //         });
+          //       }
+          //       eventsInactiveCalendar.push({
+          //         eventName: ugTitle + " " + eveTitle,
+          //         key: ugeItem.key,
+          //         eventDate: eveDate + " " + eveTime,
+          //         eventNote: eveNote,
+          //         eventCnt: 0,
+          //         eventBadge: eveBadge,
+          //         eventStatus: isActive,
+          //         eventDay: eveDay,
+          //         eventMembers: eventMembers
+          //       });
+          //     }
+          //   });
+          // });
+
+          // eventsActiveCalendar.sort((a, b) =>
+          //   a.eventDay < b.eventDay ? -1 : 1
+          // );
+          // eventsInactiveCalendar.sort((a, b) =>
+          //   a.eventDay < b.eventDay ? -1 : 1
+          // );
+
+          // setActiveClasses(eventsActiveCalendar);
+          // setInactiveClasses(eventsInactiveCalendar);
+          // setEveCnt(prev => !prev);
+        }
+      });
+      return () => {
+        ac.abort();
+        didUnsubscribe = true;
+      };
+    })();
+  }, []);
 
   const renderItem = ({ item }) => {
     return (

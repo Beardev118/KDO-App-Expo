@@ -14,6 +14,7 @@ import { InactiveState } from "./src/globalState/InactiveState";
 import { EventActiveState } from "./src/globalState/EventActiveState";
 import { EventAllMembersState } from "./src/globalState/EventAllMembersState";
 import { EventMuteState } from "./src/globalState/EventMuteState";
+import { InviteNumberState } from "./src/globalState/InviteNumberState";
 
 const uiTheme = {
   palette: {
@@ -44,7 +45,9 @@ export default function App() {
                   <EventActiveState>
                     <EventAllMembersState>
                       <EventMuteState>
-                        <AppStart />
+                        <InviteNumberState>
+                          <AppStart />
+                        </InviteNumberState>
                       </EventMuteState>
                     </EventAllMembersState>
                   </EventActiveState>

@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
 function ProfileMenu(props) {
   const Logout = () => {
     firebase.auth().signOut();
-    // props.navigation.navigate("Login");
+    props.navigation.navigate("Login");
   };
   return (
     <Menu>
