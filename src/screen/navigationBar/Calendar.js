@@ -366,16 +366,121 @@ function Calendar({ route, navigation }) {
             .doc(isSelectedItem.key)
             .collection("notify")
             .doc(user.uid)
-            .onSnapshot(querySnapshot => {
+            .onSnapshot(async querySnapshot => {
               if (querySnapshot.data() !== undefined) {
                 const queryData = querySnapshot.data();
                 if (isSelectedItem !== null) {
+                  console.log(isSelectedItem);
+                  console.log(queryData);
                   if (
                     queryData.active !== isSelectedItem.eventStatus ||
                     queryData.askBefore !== isSelectedItem.eventAskBefore * 60
                   ) {
-                    setIsLoading(true);
-                    readUGEvents();
+                    console.log(queryData.active);
+                    console.log(queryData.askBefore);
+
+                    //Calendar Table data
+
+                    const inactiveData = [];
+                    const activeData = [];
+
+                    inactiveClasses.forEach(item => {
+                      if (
+                        item.userGroupId === isSelectedItem.userGroupId &&
+                        item.key === isSelectedItem.key
+                      ) {
+                        const itemTemp = {
+                          eventName: item.eventName,
+                          key: item.key,
+                          userGroupId: item.userGroupId,
+                          eventDate: item.eventDate,
+                          eventNote: item.eventNote,
+                          eventCnt: item.eventCnt,
+                          eventBadge: item.eventBadge,
+                          eventStatus: queryData.active,
+                          eventDay: item.eventDay,
+                          eventMembers: item.eventMembers,
+                          eventAskBefore: queryData.askBefore / 60
+                        };
+                        inactiveData.push(itemTemp);
+
+                        if (queryData.active) activeData.push(itemTemp);
+                      } else {
+                        inactiveData.push(item);
+                        if (item.eventStatus) activeData.push(item);
+                      }
+                    });
+
+                    // "KDODataUserGroups.txt" rewriting...
+                    const fUserGroupsUri =
+                      FileSystem.documentDirectory + "KDODataUserGroups.txt";
+                    const options = FileSystem.EncodingType.UTF8;
+
+                    const rawUGDatas = await FileSystem.readAsStringAsync(
+                      fUserGroupsUri
+                    );
+                    const userGDatas = JSON.parse(rawUGDatas);
+
+                    const userGDatasTemp = [];
+
+                    userGDatas.forEach(item => {
+                      if (item.key === isSelectedItem.userGroupId) {
+                        const eventsTemp = [];
+                        item.events.forEach(eItem => {
+                          if (eItem.key === isSelectedItem.key) {
+                            const notifyTemp = [];
+                            eItem.notify.forEach(nItem => {
+                              if (nItem.key === user.uid) {
+                                notifyTemp.push({
+                                  key: nItem.key,
+                                  notifyValue: {
+                                    active: queryData.active,
+                                    askBefore: queryData.askBefore,
+                                    last: nItem.notifyValue.last,
+                                    pushToken: nItem.notifyValue.pushToken,
+                                    sent: nItem.notifyValue.sent
+                                  }
+                                });
+                              } else {
+                                notifyTemp.push(nItem);
+                              }
+                            });
+
+                            eventsTemp.push({
+                              key: eItem.key,
+                              eveValue: eItem.eveValue,
+                              notify: notifyTemp
+                            });
+                          } else {
+                            eventsTemp.push(eItem);
+                          }
+                        });
+                        userGDatasTemp.push({
+                          key: item.key,
+                          value: item.value,
+                          members: item.members,
+                          events: eventsTemp
+                        });
+                      } else {
+                        userGDatasTemp.push(item);
+                      }
+                    });
+
+                    FileSystem.writeAsStringAsync(
+                      fUserGroupsUri,
+                      JSON.stringify(userGDatasTemp)
+                    )
+                      .then(setUserGroupsResult => {
+                        // setIsLoading(false);
+                        console.log("SXXXX::::", userGDatasTemp);
+                        setInactiveClasses(inactiveData);
+                        setActiveClasses(activeData);
+                        setSelectedId(prev => !prev);
+                        // console.log("userGroupsContents: ", userGroupsContents);
+                      })
+                      .catch(setUserGroupsError => {
+                        console.log("setUserGroupsError: ", setUserGroupsError);
+                      });
                   }
                 }
               }
@@ -422,7 +527,7 @@ function Calendar({ route, navigation }) {
                   });
                 }
 
-                inactiveTempData.push({
+                const itemTemp = {
                   eventName: item.eventName,
                   key: item.key,
                   userGroupId: item.userGroupId,
@@ -434,22 +539,12 @@ function Calendar({ route, navigation }) {
                   eventDay: item.eventDay,
                   eventMembers: item.eventMembers,
                   eventAskBefore: item.eventAskBefore
-                });
+                };
+
+                inactiveTempData.push(itemTemp);
 
                 if (item.eventStatus) {
-                  activeTempData.push({
-                    eventName: item.eventName,
-                    key: item.key,
-                    userGroupId: item.userGroupId,
-                    eventDate: item.eventDate,
-                    eventNote: item.eventNote,
-                    eventCnt: cnt,
-                    eventBadge: item.eventBadge,
-                    eventStatus: item.eventStatus,
-                    eventDay: item.eventDay,
-                    eventMembers: item.eventMembers,
-                    eventAskBefore: item.eventAskBefore
-                  });
+                  activeTempData.push(itemTemp);
                 }
 
                 itemFlag = true;
@@ -483,6 +578,7 @@ function Calendar({ route, navigation }) {
       firebase.auth().onAuthStateChanged(user => {
         if (user != null) {
           setIsLoading(true);
+          console.log("Start reading from DB:");
           readProfiles();
         } else {
           setIsLoading(false);

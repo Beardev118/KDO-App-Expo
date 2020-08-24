@@ -349,9 +349,6 @@ function Event({ route, navigation }) {
     EventAllMembersContext
   );
   const [timeAskBefore, setTimeAskBefore] = useContext(AskBeforeTimeContext);
-
-  console.log("start ::::: ", timeAskBefore);
-
   const [hasUnsavedChange, setHasUnsavedChange] = useState(false);
 
   const [selectedId, setSelectedId] = useState(null);
