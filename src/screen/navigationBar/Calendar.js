@@ -170,8 +170,9 @@ const onChangeKeyDate = value => {
   return String(curYear) + eveDate[1] + eveDate[0] + eveHour[1] + eveTime[1];
 };
 
-function Calendar({ navigation }) {
-  const [selectedId, setSelectedId] = useState(null);
+function Calendar({ route, navigation }) {
+  const [loginFlag, setLoginFlag] = useState(false);
+  const [selectedId, setSelectedId] = useState(false);
   const [activeClasses, setActiveClasses] = useState(() => {
     return [];
   });
@@ -183,141 +184,208 @@ function Calendar({ navigation }) {
   const [eveCnt, setEveCnt] = useState(false);
   const [userGData, setUserGData] = useState(null);
 
-  useEffect(() => {
-    (async () => {
-      const ac = new AbortController();
-      let didUnsubscribe = false;
-      if (didUnsubscribe) return;
+  const [isSelectedItem, setIsSelectedItem] = useState(null);
 
-      firebase.auth().onAuthStateChanged(async user => {
-        if (user != null) {
-          // profiles Data
-          const fProfilesUri =
-            FileSystem.documentDirectory + "KDODataProfiles.txt";
-          const rawProfilesData = await FileSystem.readAsStringAsync(
-            fProfilesUri
+  // File Data reading...
+  function initFileData() {
+    if (route.params.loginFlag && loginFlag === false) {
+      setLoginFlag(true);
+      setActiveClasses([]);
+      setInactiveClasses([]);
+    }
+
+    firebase.auth().onAuthStateChanged(async user => {
+      if (user != null) {
+        // profiles Data
+        const fProfilesUri =
+          FileSystem.documentDirectory + "KDODataProfiles.txt";
+        const rawProfilesData = await FileSystem.readAsStringAsync(
+          fProfilesUri
+        );
+        const profilesData = JSON.parse(rawProfilesData);
+
+        // userGroups Data
+        const fUserGroupsUri =
+          FileSystem.documentDirectory + "KDODataUserGroups.txt";
+        const rawUserGroupsData = await FileSystem.readAsStringAsync(
+          fUserGroupsUri
+        );
+        const userGroupsData = JSON.parse(rawUserGroupsData);
+
+        setUserGData(userGroupsData);
+
+        const myProfileData = profilesData.find(item => item.key === user.uid);
+
+        const eventsActiveCalendar = [];
+        const eventsInactiveCalendar = [];
+
+        const myUserGroups = myProfileData.memberOf;
+        myUserGroups.forEach(item => {
+          const iUserGroup = userGroupsData.find(
+            ugItem => ugItem.key === item.key
           );
-          const profilesData = JSON.parse(rawProfilesData);
+          const ugTitle = iUserGroup.value.name;
 
-          // userGroups Data
-          const fUserGroupsUri =
-            FileSystem.documentDirectory + "KDODataUserGroups.txt";
-          const rawUserGroupsData = await FileSystem.readAsStringAsync(
-            fUserGroupsUri
-          );
-          const userGroupsData = JSON.parse(rawUserGroupsData);
+          const eventMembers = [];
+          const ugMembers = iUserGroup.members;
 
-          setUserGData(userGroupsData);
-
-          const myProfileData = profilesData.find(
-            item => item.key === user.uid
-          );
-
-          const eventsActiveCalendar = [];
-          const eventsInactiveCalendar = [];
-
-          const myUserGroups = myProfileData.memberOf;
-          myUserGroups.forEach(item => {
-            const iUserGroup = userGroupsData.find(
-              ugItem => ugItem.key === item.key
-            );
-            const ugTitle = iUserGroup.value.name;
-
-            const eventMembers = [];
-            const ugMembers = iUserGroup.members;
-            ugMembers.forEach(ugmItem => {
-              eventMembers.push({
-                memKey: ugmItem.key,
-                memActive: ugmItem.active.active
-              });
+          ugMembers.forEach(ugmItem => {
+            eventMembers.push({
+              memKey: ugmItem.key,
+              memActive: ugmItem.active.active
             });
+          });
 
-            const ugEvents = iUserGroup.events;
-            ugEvents.forEach(ugeItem => {
-              const eveTitle = ugeItem.eveValue.name;
+          const ugEvents = iUserGroup.events;
+          ugEvents.forEach(ugeItem => {
+            const eveTitle = ugeItem.eveValue.name;
+            const eveStartDate = ugeItem.eveValue.started.split(",");
+            const eveTime =
+              onChangeEveStr(eveStartDate[1]) +
+              ":" +
+              onChangeEveStr(eveStartDate[0]);
 
-              const eveStartDate = ugeItem.eveValue.started.split(",");
-              const eveTime =
-                onChangeEveStr(eveStartDate[1]) +
-                ":" +
-                onChangeEveStr(eveStartDate[0]);
+            const curDay = new Date().getDay();
+            let eveDay = Number(eveStartDate[4]) - curDay;
+            if (eveDay < 0) eveDay += 7;
+            if (eveDay == 0) {
+              const curHour = new Date().getHours();
+              const curMinute = new Date().getMinutes();
+              if (
+                curHour > Number(eveStartDate[1]) ||
+                (curHour == Number(eveStartDate[1]) &&
+                  curMinute >= Number(eveStartDate[0]))
+              )
+                eveDay = 7;
+            }
 
-              const curDay = new Date().getDay();
-              let eveDay = Number(eveStartDate[4]) - curDay;
-              if (eveDay < 0) eveDay += 7;
-              if (eveDay == 0) {
-                const curHour = new Date().getHours();
-                const curMinute = new Date().getMinutes();
-                if (
-                  curHour > Number(eveStartDate[1]) ||
-                  (curHour == Number(eveStartDate[1]) &&
-                    curMinute >= Number(eveStartDate[0]))
-                )
-                  eveDay = 7;
-              }
+            const eveBadge = onChangeEveBadge(eveDay);
+            const eveNote = onChangeEveNote(Number(eveStartDate[4]));
 
-              const eveBadge = onChangeEveBadge(eveDay);
-              const eveNote = onChangeEveNote(Number(eveStartDate[4]));
+            const eDate = new Date().getDate();
+            const eMonth = new Date().getMonth() + 1;
 
-              const eDate = new Date().getDate();
-              const eMonth = new Date().getMonth() + 1;
+            const eveDate = onChangeEveDate(eDate, eMonth, eveDay);
 
-              const eveDate = onChangeEveDate(eDate, eMonth, eveDay);
+            const myNotify = ugeItem.notify.find(
+              eveNotiItem => eveNotiItem.key === user.uid
+            );
 
-              const myNotify = ugeItem.notify.find(
-                eveNotiItem => eveNotiItem.key === user.uid
-              );
+            if (myNotify !== undefined) {
+              const isActive = myNotify.notifyValue.active;
+              let eveAskBefore = 1;
+              if (myNotify.notifyValue.askBefore !== undefined)
+                eveAskBefore = myNotify.notifyValue.askBefore / 60;
 
-              if (myNotify !== undefined) {
-                const isActive = myNotify.notifyValue.active;
-
-                if (isActive == true) {
-                  eventsActiveCalendar.push({
-                    eventName: ugTitle + " " + eveTitle,
-                    key: ugeItem.key,
-                    eventDate: eveDate + " " + eveTime,
-                    eventNote: eveNote,
-                    eventCnt: 0,
-                    eventBadge: eveBadge,
-                    eventStatus: isActive,
-                    eventDay: eveDay,
-                    eventMembers: eventMembers
-                  });
-                }
-                eventsInactiveCalendar.push({
+              if (isActive == true) {
+                eventsActiveCalendar.push({
                   eventName: ugTitle + " " + eveTitle,
                   key: ugeItem.key,
+                  userGroupId: item.key,
                   eventDate: eveDate + " " + eveTime,
                   eventNote: eveNote,
                   eventCnt: 0,
                   eventBadge: eveBadge,
                   eventStatus: isActive,
                   eventDay: eveDay,
-                  eventMembers: eventMembers
+                  eventMembers: eventMembers,
+                  eventAskBefore: eveAskBefore
                 });
               }
-            });
+              eventsInactiveCalendar.push({
+                eventName: ugTitle + " " + eveTitle,
+                key: ugeItem.key,
+                userGroupId: item.key,
+                eventDate: eveDate + " " + eveTime,
+                eventNote: eveNote,
+                eventCnt: 0,
+                eventBadge: eveBadge,
+                eventStatus: isActive,
+                eventDay: eveDay,
+                eventMembers: eventMembers,
+                eventAskBefore: eveAskBefore
+              });
+            }
           });
+        });
 
-          eventsActiveCalendar.sort((a, b) =>
-            a.eventDay < b.eventDay ? -1 : 1
-          );
-          eventsInactiveCalendar.sort((a, b) =>
-            a.eventDay < b.eventDay ? -1 : 1
-          );
+        eventsActiveCalendar.sort((a, b) => (a.eventDay < b.eventDay ? -1 : 1));
+        eventsInactiveCalendar.sort((a, b) =>
+          a.eventDay < b.eventDay ? -1 : 1
+        );
 
-          setActiveClasses(eventsActiveCalendar);
-          setInactiveClasses(eventsInactiveCalendar);
-          setEveCnt(prev => !prev);
-        }
+        setActiveClasses(eventsActiveCalendar);
+        setInactiveClasses(eventsInactiveCalendar);
+        setEveCnt(prev => !prev);
+        setIsLoading(false);
+      }
+    });
+  }
+  // useEffect(() => {
+  //   (async () => {
+  //     const ac = new AbortController();
+  //     let didUnsubscribe = false;
+  //     if (didUnsubscribe) return;
+
+  //     return () => {
+  //       ac.abort();
+  //       didUnsubscribe = true;
+  //     };
+  //   })();
+  // }, []);
+
+  //snapshot firestore profiles DBListener
+
+  useEffect(() => {
+    firebase
+      .firestore()
+      .collection("profiles")
+      .onSnapshot(querySnapshot => {
+        // console.log("Total users(profiles): ", querySnapshot.size);
+        // querySnapshot.forEach(documentSnapshot => {
+        //   console.log(
+        //     "User ID: ",
+        //     documentSnapshot.id,
+        //     documentSnapshot.data()
+        //   );
+        // });
       });
-      return () => {
-        ac.abort();
-        didUnsubscribe = true;
-      };
-    })();
   }, []);
 
+  //snapshot firestore userGroups DBListener
+
+  useEffect(() => {
+    if (isSelectedItem !== null) {
+      firebase.auth().onAuthStateChanged(user => {
+        if (user != null) {
+          firebase
+            .firestore()
+            .collection("userGroups")
+            .doc(isSelectedItem.userGroupId)
+            .collection("events")
+            .doc(isSelectedItem.key)
+            .collection("notify")
+            .doc(user.uid)
+            .onSnapshot(querySnapshot => {
+              if (querySnapshot.data() !== undefined) {
+                const queryData = querySnapshot.data();
+                if (isSelectedItem !== null) {
+                  if (
+                    queryData.active !== isSelectedItem.eventStatus ||
+                    queryData.askBefore !== isSelectedItem.eventAskBefore * 60
+                  ) {
+                    setIsLoading(true);
+                    readUGEvents();
+                  }
+                }
+              }
+            });
+        }
+      });
+    }
+  }, [isSelectedItem]);
+
+  //snapshot realtime DB listener
   useEffect(() => {
     (async () => {
       const ac = new AbortController();
@@ -357,26 +425,30 @@ function Calendar({ navigation }) {
                 inactiveTempData.push({
                   eventName: item.eventName,
                   key: item.key,
+                  userGroupId: item.userGroupId,
                   eventDate: item.eventDate,
                   eventNote: item.eventNote,
                   eventCnt: cnt,
                   eventBadge: item.eventBadge,
                   eventStatus: item.eventStatus,
                   eventDay: item.eventDay,
-                  eventMembers: item.eventMembers
+                  eventMembers: item.eventMembers,
+                  eventAskBefore: item.eventAskBefore
                 });
 
                 if (item.eventStatus) {
                   activeTempData.push({
                     eventName: item.eventName,
                     key: item.key,
+                    userGroupId: item.userGroupId,
                     eventDate: item.eventDate,
                     eventNote: item.eventNote,
                     eventCnt: cnt,
                     eventBadge: item.eventBadge,
                     eventStatus: item.eventStatus,
                     eventDay: item.eventDay,
-                    eventMembers: item.eventMembers
+                    eventMembers: item.eventMembers,
+                    eventAskBefore: item.eventAskBefore
                   });
                 }
 
@@ -395,6 +467,7 @@ function Calendar({ navigation }) {
           setActiveClasses(activeTempData);
           setInactiveClasses(inactiveTempData);
           setIsLoading(false);
+          setSelectedId(prev => !prev);
         });
       return () => {
         ac.abort();
@@ -403,17 +476,274 @@ function Calendar({ navigation }) {
     })();
   }, [eveCnt]);
 
+  //Firestore Data reading
+
+  useEffect(() => {
+    (async () => {
+      firebase.auth().onAuthStateChanged(user => {
+        if (user != null) {
+          setIsLoading(true);
+          readProfiles();
+        } else {
+          setIsLoading(false);
+        }
+      });
+    })();
+  }, []);
+
+  function readProfiles() {
+    const fProfilesUri = FileSystem.documentDirectory + "KDODataProfiles.txt";
+    const options = FileSystem.EncodingType.UTF8;
+
+    let profilesContents = [];
+
+    firebase
+      .firestore()
+      .collection("profiles")
+      .get()
+      .then(getProfilesResult => {
+        let cnt = getProfilesResult.size;
+        getProfilesResult.forEach(async doc => {
+          let memberOf = [];
+
+          await firebase
+            .firestore()
+            .collection("profiles")
+            .doc(doc.id)
+            .collection("memberOf")
+            .get()
+            .then(getMemberDoc => {
+              let nCnt = getMemberDoc.size;
+              getMemberDoc.forEach(mDoc => {
+                memberOf.push({
+                  key: mDoc.id,
+                  owner: mDoc.data()
+                });
+                nCnt -= 1;
+              });
+              if (nCnt == 0) {
+                profilesContents.push({
+                  key: doc.id,
+                  value: doc.data(),
+                  memberOf: memberOf
+                });
+                cnt -= 1;
+              }
+            })
+            .catch(memError => {
+              console.log("memError: ", memError);
+            });
+
+          if (cnt == 0) {
+            FileSystem.writeAsStringAsync(
+              fProfilesUri,
+              JSON.stringify(profilesContents)
+            )
+              .then(setProfilesResult => {
+                readScheduled();
+              })
+              .catch(setProfilesError => {
+                console.log("setProfilesError: ", setProfilesError);
+              });
+          }
+        });
+      })
+      .catch(getProfilesError => {
+        console.log("getProfilesError: ", getProfilesError);
+      });
+  }
+
+  function readScheduled() {
+    const fScheduledUri = FileSystem.documentDirectory + "KDODataScheduled.txt";
+    const options = FileSystem.EncodingType.UTF8;
+
+    firebase
+      .firestore()
+      .collection("scheduled")
+      .get()
+      .then(getScheduledResult => {
+        const scheduledContents = [];
+        getScheduledResult.forEach(doc => {
+          scheduledContents.push({
+            key: doc.id,
+            value: doc.data()
+          });
+        });
+
+        FileSystem.writeAsStringAsync(
+          fScheduledUri,
+          JSON.stringify(scheduledContents)
+        )
+          .then(setScheduledResult => {
+            readUGEvents();
+          })
+          .catch(setScheduledError => {
+            console.log("setScheduledError: ", setScheduledError);
+          });
+      })
+      .catch(getScheduledError => {
+        console.log("getScheduledError: ", getScheduledError);
+      });
+  }
+
+  function readUGEvents() {
+    firebase
+      .firestore()
+      .collection("userGroups")
+      .get()
+      .then(getUserGroupsResult => {
+        let userGroupsEventsContents = [];
+        let cnt = getUserGroupsResult.size;
+
+        getUserGroupsResult.forEach(async doc => {
+          let eventsContents = [];
+
+          //get Events
+          await firebase
+            .firestore()
+            .collection("userGroups")
+            .doc(doc.id)
+            .collection("events")
+            .get()
+            .then(getEventsResult => {
+              let eCnt = getEventsResult.size;
+
+              getEventsResult.forEach(async getEventDoc => {
+                await firebase
+                  .firestore()
+                  .collection("userGroups")
+                  .doc(doc.id)
+                  .collection("events")
+                  .doc(getEventDoc.id)
+                  .collection("notify")
+                  .get()
+                  .then(notifyResult => {
+                    let notiCnt = notifyResult.size;
+
+                    let notifyContents = [];
+                    notifyResult.forEach(notifyDoc => {
+                      notifyContents.push({
+                        key: notifyDoc.id,
+                        notifyValue: notifyDoc.data()
+                      });
+                      notiCnt -= 1;
+                    });
+                    if (notiCnt == 0) {
+                      eventsContents.push({
+                        key: getEventDoc.id,
+                        eveValue: getEventDoc.data(),
+                        notify: notifyContents
+                      });
+                      eCnt -= 1;
+                    }
+                  })
+                  .catch(notifyErr => {
+                    console.log("notifyError", notifyErr);
+                  });
+                if (eCnt == 0) {
+                  userGroupsEventsContents.push({
+                    key: doc.id,
+                    events: eventsContents
+                  });
+                  cnt -= 1;
+                }
+                if (cnt == 0) {
+                  readUserGroups(userGroupsEventsContents);
+                }
+              });
+            })
+            .catch(eventsError => {
+              console.log("eventsError: ", eventsError);
+            });
+        });
+      })
+      .catch(getUserGroupsError => {
+        console.log("getUserGroupsError: ", getUserGroupsError);
+      });
+  }
+
+  function readUserGroups(eData) {
+    const fUserGroupsUri =
+      FileSystem.documentDirectory + "KDODataUserGroups.txt";
+    const options = FileSystem.EncodingType.UTF8;
+
+    firebase
+      .firestore()
+      .collection("userGroups")
+      .get()
+      .then(getUserGroupsResult => {
+        const userGroupsContents = [];
+        let cnt = getUserGroupsResult.size;
+
+        getUserGroupsResult.forEach(async doc => {
+          let membersContents = [];
+
+          // get members
+          await firebase
+            .firestore()
+            .collection("userGroups")
+            .doc(doc.id)
+            .collection("members")
+            .get()
+            .then(async getMemResult => {
+              nCnt = getMemResult.size;
+              getMemResult.forEach(getMemDoc => {
+                membersContents.push({
+                  key: getMemDoc.id,
+                  active: getMemDoc.data()
+                });
+                nCnt -= 1;
+              });
+              if (nCnt == 0) {
+                let eveData = eData.find(item => item.key === doc.id);
+                userGroupsContents.push({
+                  key: doc.id,
+                  value: doc.data(),
+                  members: membersContents,
+                  events: eveData.events
+                });
+                cnt -= 1;
+              }
+
+              if (cnt == 0) {
+                FileSystem.writeAsStringAsync(
+                  fUserGroupsUri,
+                  JSON.stringify(userGroupsContents)
+                )
+                  .then(setUserGroupsResult => {
+                    // setIsLoading(false);
+                    initFileData();
+                    // console.log("userGroupsContents: ", userGroupsContents);
+                  })
+                  .catch(setUserGroupsError => {
+                    console.log("setUserGroupsError: ", setUserGroupsError);
+                  });
+              }
+            })
+            .catch(memErr => {
+              console.log("memErr: ", memErr);
+            });
+        });
+      })
+      .catch(getUserGroupsError => {
+        console.log("getUserGroupsError: ", getUserGroupsError);
+      });
+  }
+
   const handleItemClick = item => {
+    setIsSelectedItem(item);
     navigation.navigate("Event", {
       eventName: item.eventName,
       key: item.key,
+      userGroupId: item.userGroupId,
       eventDate: item.eventDate,
       eventNote: item.eventNote,
       eventCnt: item.eventCnt,
       eventBadge: item.eventBadge,
       eventStatus: item.eventStatus,
       eventDay: item.eventDay,
-      eventMembers: item.eventMembers
+      eventMembers: item.eventMembers,
+      eventAskBefore: item.eventAskBefore
     });
   };
   const renderItem = ({ item }) => {

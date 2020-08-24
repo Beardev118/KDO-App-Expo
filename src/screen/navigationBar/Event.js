@@ -12,6 +12,7 @@ import {
   Image,
   TouchableOpacity
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import * as FileSystem from "expo-file-system";
 import { firebase } from "../../firebase/config";
 import Status from "../modalPages/Status";
@@ -19,8 +20,9 @@ import Member from "../modalPages/Member";
 import { GlobalContext } from "../../globalState/GlobalState";
 import { MemberContext } from "../../globalState/MemberState";
 import { EventActiveContext } from "../../globalState/EventActiveState";
-import { EventMuteContext } from "../../globalState/EventMuteState";
+import { AskBeforeTimeContext } from "../../globalState/AskBeforeTimeState";
 import { EventAllMembersContext } from "../../globalState/EventAllMembersState";
+import { async } from "@firebase/util";
 
 const styles = StyleSheet.create({
   headerRightContainer: {
@@ -222,22 +224,28 @@ const BottomBar = props => {
   const [modalStatus, setModalStatus] = useContext(GlobalContext);
 
   const onClickYesNo = value => {
-    firebase
-      .database()
-      .ref(
-        "/responses/" +
-          props.item[0].eveKey +
-          "/" +
-          props.item[0].eveDateKey +
-          "/" +
-          props.item[0].userKey
-      )
-      .set({
-        m: props.item[0].m,
-        p: value,
-        t: Math.trunc(firebase.firestore.Timestamp.now().toMillis() / 1000)
-      })
-      .then(() => console.log("Xxx: X"));
+    if (
+      props.item[0].eveKey !== "" &&
+      props.item[0].eveDateKey !== "" &&
+      props.item[0].userKey !== ""
+    ) {
+      firebase
+        .database()
+        .ref(
+          "/responses/" +
+            props.item[0].eveKey +
+            "/" +
+            props.item[0].eveDateKey +
+            "/" +
+            props.item[0].userKey
+        )
+        .set({
+          m: props.item[0].m,
+          p: value,
+          t: Math.trunc(firebase.firestore.Timestamp.now().toMillis() / 1000)
+        })
+        .then(() => console.log("Xxx: X"));
+    }
   };
 
   return (
@@ -328,10 +336,11 @@ function Event({ route, navigation }) {
     eventBadge,
     eventStatus,
     eventDay,
-    eventMembers
+    eventMembers,
+    eventAskBefore,
+    userGroupId
   } = route.params;
 
-  const [selectedId, setSelectedId] = useState(null);
   const [modalMemberStatus, setModalMemberStatus] = useContext(MemberContext);
   const [eventActiveStatus, setEventActiveStatus] = useContext(
     EventActiveContext
@@ -339,7 +348,13 @@ function Event({ route, navigation }) {
   const [eventAllMembersStatus, setEventAllMembersStatus] = useContext(
     EventAllMembersContext
   );
-  const [eventMuteStatus, setEventMuteStatus] = useContext(EventMuteContext);
+  const [timeAskBefore, setTimeAskBefore] = useContext(AskBeforeTimeContext);
+
+  console.log("start ::::: ", timeAskBefore);
+
+  const [hasUnsavedChange, setHasUnsavedChange] = useState(false);
+
+  const [selectedId, setSelectedId] = useState(null);
   const [members, setMembers] = useState([]);
   const [authMember, setAuthMember] = useState([
     {
@@ -353,11 +368,13 @@ function Event({ route, navigation }) {
     }
   ]);
   const [firebaseFlag, setFirebaseFlag] = useState(false);
+  const [oldFirebaseFlag, setOldFirebaseFlag] = useState(false);
   const [userProfileData, setUserProfileData] = useState(null);
   const [userName, setUserName] = useState("");
   const [userPhoneNumber, setUserPhoneNumber] = useState("");
   const [userMsg, setUserMsg] = useState("");
   const [userImgUrl, setUserImgUrl] = useState("");
+  const [onValueChange, setOnValueChange] = useState(null);
   const [userItem, setUserItem] = useState([
     {
       eveKey: "",
@@ -370,8 +387,6 @@ function Event({ route, navigation }) {
   const [fullCnt, setFullCnt] = useState(0);
   const [miniCnt, setMiniCnt] = useState(0);
   const [authUser, setAuthUser] = useState(null);
-  const toggleSwitch = () =>
-    setEventActiveStatus(previousState => !previousState);
 
   const onCalcColor = value => {
     if (value >= 80) return "#27842A";
@@ -391,19 +406,100 @@ function Event({ route, navigation }) {
       const rawProfilesData = await FileSystem.readAsStringAsync(fProfilesUri);
       const profilesData = JSON.parse(rawProfilesData);
       setUserProfileData(profilesData);
-      setEventActiveStatus(eventStatus);
 
-      // userGroups Data
-      const fUserGroupsUri =
-        FileSystem.documentDirectory + "KDODataUserGroups.txt";
-      const rawUserGroupsData = await FileSystem.readAsStringAsync(
-        fUserGroupsUri
-      );
-      const userGroupsData = JSON.parse(rawUserGroupsData);
+      setEventActiveStatus(eventStatus);
+      setTimeAskBefore(eventAskBefore);
 
       firebase.auth().onAuthStateChanged(user => {
         setAuthUser(user);
-        setFirebaseFlag(prev => !prev);
+
+        if (eventMembers !== undefined) {
+          let eventMembersCount = 0;
+          eventMembers.forEach(emItem => {
+            eventMembersCount += 1;
+          });
+
+          const memberTempData = [];
+          const authMemberTempData = [];
+
+          eventMembers.forEach(async emItem => {
+            const authUserData = [];
+            if (user !== null) {
+              if (emItem.memKey === user.uid) {
+                authUserData.push({
+                  eveKey: key,
+                  eveDateKey: onChangeKeyDate(eventDate),
+                  userKey: emItem.memKey,
+                  m: "",
+                  p: -1
+                });
+                setUserItem(authUserData);
+              }
+            }
+
+            let emProfileData;
+            let emUserName = "";
+            let emUserPhoneNumber = "";
+            if (profilesData !== null) {
+              emProfileData = profilesData.find(
+                upItem => upItem.key === emItem.memKey
+              );
+            }
+
+            if (emProfileData !== undefined) {
+              emUserName = emProfileData.value.username;
+              emUserPhoneNumber = emProfileData.value.phone;
+              if (emProfileData.value.hasPhoto) {
+                await firebase
+                  .storage()
+                  .ref()
+                  .child("profile_images")
+                  .child(emItem.memKey)
+                  .getDownloadURL()
+                  .then(url => {
+                    const memberTempDataItem = {
+                      key: emItem.memKey,
+                      textUserName: emUserName,
+                      textMsg: "",
+                      textNote: -1,
+                      colorNote: "",
+                      imgUrl: url,
+                      textUserPhoneNumber: emUserPhoneNumber
+                    };
+                    memberTempData.push(memberTempDataItem);
+                    if (emItem.memKey === user.uid)
+                      authMemberTempData.push(memberTempDataItem);
+
+                    eventMembersCount -= 1;
+                  })
+                  .catch(error => {
+                    eventMembersCount -= 1;
+                  });
+              } else {
+                const memberTempDataItem = {
+                  key: emItem.memKey,
+                  textUserName: emUserName,
+                  textMsg: "",
+                  textNote: -1,
+                  colorNote: "",
+                  imgUrl: "",
+                  textUserPhoneNumber: emUserPhoneNumber
+                };
+                memberTempData.push(memberTempDataItem);
+                if (emItem.memKey === user.uid)
+                  authMemberTempData.push(memberTempDataItem);
+
+                eventMembersCount -= 1;
+              }
+            }
+            if (eventMembersCount === 0) {
+              setSelectedId(prev => !prev);
+              setMembers(memberTempData);
+              setAuthMember(authMemberTempData);
+              setFirebaseFlag(prev => !prev);
+            }
+          });
+        }
       });
 
       return () => {
@@ -411,7 +507,7 @@ function Event({ route, navigation }) {
         didUnsubscribe = true;
       };
     })();
-  }, []);
+  }, [navigation, key]);
 
   useEffect(() => {
     (async () => {
@@ -419,170 +515,232 @@ function Event({ route, navigation }) {
       let didUnsubscribe = false;
       if (didUnsubscribe) return;
 
-      //Firebase Realtime DB snapshot
-      firebase
-        .database()
-        .ref("/responses")
-        .on("value", async snapshot => {
-          // console.log('User data: ', snapshot.val());
-          const resData = snapshot.val();
+      if (firebaseFlag !== oldFirebaseFlag) {
+        setOldFirebaseFlag(prev => !prev);
+        //Firebase Realtime DB snapshot
+        const onValueChange = firebase
+          .database()
+          .ref("/responses")
+          .on("value", async snapshot => {
+            if (snapshot === null || snapshot.val === undefined) return;
 
-          const memberTempData = [];
-          const authMemberTempData = [];
+            const resData = snapshot.val();
+            const memberTempData = [];
+            const authMemberTempData = [];
+            const eveTempData = resData[key];
+            const eveDateKey = onChangeKeyDate(eventDate);
 
-          const eveTempData = resData[key];
-          const eveDateKey = onChangeKeyDate(eventDate);
+            if (eveTempData !== undefined && eveDateKey !== undefined) {
+              const eveMemData = eveTempData[eveDateKey];
+              if (eveMemData !== undefined) {
+                if (eventMembers !== undefined) {
+                  let flCnt = 0;
+                  let miCnt = 0;
 
-          let itemFlag = false;
+                  let eventMembersCount = 0;
+                  eventMembers.forEach(emItem => {
+                    eventMembersCount += 1;
+                  });
 
-          if (eveTempData !== undefined && eveDateKey !== undefined) {
-            const eveMemData = eveTempData[eveDateKey];
-            if (eveMemData !== undefined) {
-              if (eventMembers !== undefined) {
-                let flCnt = 0;
-                let miCnt = 0;
+                  await eventMembers.forEach(async emItem => {
+                    const eveMData = eveMemData[emItem.memKey];
 
-                let eventMembersCount = 0;
-                eventMembers.forEach(emItem => {
-                  eventMembersCount += 1;
-                });
+                    const authUserData = [];
+                    if (authUser !== null) {
+                      if (emItem.memKey === authUser.uid) {
+                        if (eveMData !== undefined) {
+                          authUserData.push({
+                            eveKey: key,
+                            eveDateKey: eveDateKey,
+                            userKey: emItem.memKey,
+                            m: eveMData.m,
+                            p: eveMData.p
+                          });
+                        } else {
+                          authUserData.push({
+                            eveKey: key,
+                            eveDateKey: eveDateKey,
+                            userKey: emItem.memKey,
+                            m: "",
+                            p: -1
+                          });
+                        }
 
-                await eventMembers.forEach(async emItem => {
-                  const eveMData = eveMemData[emItem.memKey];
-
-                  const authUserData = [];
-                  if (authUser !== null) {
-                    if (emItem.memKey === authUser.uid) {
-                      if (eveMData !== undefined) {
-                        authUserData.push({
-                          eveKey: key,
-                          eveDateKey: eveDateKey,
-                          userKey: emItem.memKey,
-                          m: eveMData.m,
-                          p: eveMData.p
-                        });
-                      } else {
-                        authUserData.push({
-                          eveKey: key,
-                          eveDateKey: eveDateKey,
-                          userKey: emItem.memKey,
-                          m: "",
-                          p: -1
-                        });
+                        setUserItem(authUserData);
                       }
-
-                      setUserItem(authUserData);
                     }
-                  }
 
-                  let memImgUrl = "";
-                  let emProfileData;
-                  let emUserName = "";
-                  let emUserPhoneNumber = "";
-                  if (userProfileData !== null) {
-                    emProfileData = userProfileData.find(
-                      upItem => upItem.key === emItem.memKey
-                    );
-                  }
+                    let memImgUrl = "";
+                    let emProfileData;
+                    let emUserName = "";
+                    let emUserPhoneNumber = "";
+                    if (userProfileData !== null) {
+                      emProfileData = userProfileData.find(
+                        upItem => upItem.key === emItem.memKey
+                      );
+                    }
 
-                  if (emProfileData !== undefined) {
-                    emUserName = emProfileData.value.username;
-                    emUserPhoneNumber = emProfileData.value.phone;
-                    if (emProfileData.value.hasPhoto) {
-                      await firebase
-                        .storage()
-                        .ref()
-                        .child("profile_images")
-                        .child(emItem.memKey)
-                        .getDownloadURL()
-                        .then(url => {
-                          memImgUrl = url;
-                          if (eveMData !== undefined) {
-                            const memberTempDataItem = {
-                              key: emItem.memKey,
-                              textUserName: emUserName,
-                              textMsg: eveMData.m,
-                              textNote: eveMData.p,
-                              colorNote: onCalcColor(eveMData.p),
-                              imgUrl: memImgUrl,
-                              textUserPhoneNumber: emUserPhoneNumber
-                            };
-                            memberTempData.push(memberTempDataItem);
-                            if (emItem.memKey === authUser.uid)
-                              authMemberTempData.push(memberTempDataItem);
-                            if (eveMData.p === 100) flCnt += 1;
-                            if (eveMData.p < 100 && eveMData.p >= 80)
-                              miCnt += 1;
-                          } else {
-                            const memberTempDataItem = {
-                              key: emItem.memKey,
-                              textUserName: emUserName,
-                              textMsg: "",
-                              textNote: -1,
-                              colorNote: "",
-                              imgUrl: memImgUrl,
-                              textUserPhoneNumber: emUserPhoneNumber
-                            };
-                            memberTempData.push(memberTempDataItem);
-                            if (emItem.memKey === authUser.uid)
-                              authMemberTempData.push(memberTempDataItem);
-                          }
-                          eventMembersCount -= 1;
-                        })
-                        .catch(error => {
-                          memImgUrl = "";
-                        });
-                    } else {
-                      if (eveMData !== undefined) {
-                        const memberTempDataItem = {
-                          key: emItem.memKey,
-                          textUserName: emUserName,
-                          textMsg: eveMData.m,
-                          textNote: eveMData.p,
-                          colorNote: onCalcColor(eveMData.p),
-                          imgUrl: memImgUrl,
-                          textUserPhoneNumber: emUserPhoneNumber
-                        };
-                        memberTempData.push(memberTempDataItem);
-                        if (emItem.memKey === authUser.uid)
-                          authMemberTempData.push(memberTempDataItem);
-                        if (eveMData.p === 100) flCnt += 1;
-                        if (eveMData.p < 100 && eveMData.p >= 80) miCnt += 1;
+                    if (emProfileData !== undefined) {
+                      emUserName = emProfileData.value.username;
+                      emUserPhoneNumber = emProfileData.value.phone;
+                      if (emProfileData.value.hasPhoto) {
+                        await firebase
+                          .storage()
+                          .ref()
+                          .child("profile_images")
+                          .child(emItem.memKey)
+                          .getDownloadURL()
+                          .then(url => {
+                            memImgUrl = url;
+                            if (eveMData !== undefined) {
+                              const memberTempDataItem = {
+                                key: emItem.memKey,
+                                textUserName: emUserName,
+                                textMsg: eveMData.m,
+                                textNote: eveMData.p,
+                                colorNote: onCalcColor(eveMData.p),
+                                imgUrl: memImgUrl,
+                                textUserPhoneNumber: emUserPhoneNumber
+                              };
+                              memberTempData.push(memberTempDataItem);
+                              if (emItem.memKey === authUser.uid)
+                                authMemberTempData.push(memberTempDataItem);
+                              if (eveMData.p === 100) flCnt += 1;
+                              if (eveMData.p < 100 && eveMData.p >= 80)
+                                miCnt += 1;
+                            } else {
+                              const memberTempDataItem = {
+                                key: emItem.memKey,
+                                textUserName: emUserName,
+                                textMsg: "",
+                                textNote: -1,
+                                colorNote: "",
+                                imgUrl: memImgUrl,
+                                textUserPhoneNumber: emUserPhoneNumber
+                              };
+                              memberTempData.push(memberTempDataItem);
+                              if (emItem.memKey === authUser.uid)
+                                authMemberTempData.push(memberTempDataItem);
+                            }
+                            eventMembersCount -= 1;
+                          })
+                          .catch(error => {
+                            memImgUrl = "";
+                          });
                       } else {
-                        const memberTempDataItem = {
-                          key: emItem.memKey,
-                          textUserName: emUserName,
-                          textMsg: "",
-                          textNote: -1,
-                          colorNote: "",
-                          imgUrl: memImgUrl,
-                          textUserPhoneNumber: emUserPhoneNumber
-                        };
-                        memberTempData.push(memberTempDataItem);
-                        if (emItem.memKey === authUser.uid)
-                          authMemberTempData.push(memberTempDataItem);
+                        if (eveMData !== undefined) {
+                          const memberTempDataItem = {
+                            key: emItem.memKey,
+                            textUserName: emUserName,
+                            textMsg: eveMData.m,
+                            textNote: eveMData.p,
+                            colorNote: onCalcColor(eveMData.p),
+                            imgUrl: memImgUrl,
+                            textUserPhoneNumber: emUserPhoneNumber
+                          };
+                          memberTempData.push(memberTempDataItem);
+                          if (emItem.memKey === authUser.uid)
+                            authMemberTempData.push(memberTempDataItem);
+                          if (eveMData.p === 100) flCnt += 1;
+                          if (eveMData.p < 100 && eveMData.p >= 80) miCnt += 1;
+                        } else {
+                          const memberTempDataItem = {
+                            key: emItem.memKey,
+                            textUserName: emUserName,
+                            textMsg: "",
+                            textNote: -1,
+                            colorNote: "",
+                            imgUrl: memImgUrl,
+                            textUserPhoneNumber: emUserPhoneNumber
+                          };
+                          memberTempData.push(memberTempDataItem);
+                          if (emItem.memKey === authUser.uid)
+                            authMemberTempData.push(memberTempDataItem);
+                        }
+                        eventMembersCount -= 1;
                       }
-                      eventMembersCount -= 1;
                     }
-                  }
-                  if (eventMembersCount === 0) {
-                    setSelectedId(prev => !prev);
-                    setMembers(memberTempData);
-                    setAuthMember(authMemberTempData);
-                    setFullCnt(flCnt);
-                    setMiniCnt(miCnt);
-                  }
-                });
+                    if (eventMembersCount === 0) {
+                      setSelectedId(prev => !prev);
+                      setMembers(memberTempData);
+                      setAuthMember(authMemberTempData);
+                      setFullCnt(flCnt);
+                      setMiniCnt(miCnt);
+                    }
+                  });
+                }
               }
             }
-          }
-        });
+          });
+
+        setOnValueChange(onValueChange);
+      }
+
       return () => {
         ac.abort();
+        // firebase
+        //   .database()
+        //   .ref("/responses")
+        //   .off("value", onValueChange);
         didUnsubscribe = true;
       };
     })();
   }, [firebaseFlag]);
+
+  useEffect(() => {
+    let askFlag = 1;
+    navigation.addListener("beforeRemove", e => {
+      if (askFlag > 2) return;
+      if (askFlag === 1) {
+        // If we don't have unsaved changes, then we don't need to do anything
+        e.preventDefault();
+
+        const SR = timeAskBefore;
+        const SRT = eventActiveStatus;
+
+        firebase.auth().onAuthStateChanged(async user => {
+          if (user != null) {
+            await firebase
+              .firestore()
+              .collection("userGroups")
+              .doc(userGroupId)
+              .collection("events")
+              .doc(key)
+              .collection("notify")
+              .doc(user.uid)
+              .update({
+                active: eventActiveStatus,
+                askBefore: 60 * timeAskBefore
+              })
+              .then(() => {
+                setHasUnsavedChange(true);
+                askFlag += hasUnsavedChange;
+                navigation.goBack();
+                // navigation.navigate("Home");
+              });
+          }
+        });
+      }
+    });
+
+    return () => {
+      navigation.removeListener("beforeRemove");
+    };
+  }, [hasUnsavedChange]);
+
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     // Do something when the screen is focused
+
+  //     console.log("ATTTT:::");
+
+  //     return () => {
+  //       // Do something when the screen is unfocused
+  //       // Useful for cleanup functions
+  //       console.log("BTTTT::::");
+  //     };
+  //   }, [])
+  // );
 
   const TopBar = () => (
     <View style={{ backgroundColor: "#E9E6DD" }}>

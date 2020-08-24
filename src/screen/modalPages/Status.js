@@ -27,22 +27,30 @@ function Status(props) {
   }, [modalStatus]);
 
   const onUpdateStatus = () => {
-    firebase
-      .database()
-      .ref(
-        "/responses/" +
-          props.item[0].eveKey +
-          "/" +
-          props.item[0].eveDateKey +
-          "/" +
-          props.item[0].userKey
-      )
-      .set({
-        m: valueMessage,
-        p: sliderValue,
-        t: Math.trunc(firebase.firestore.Timestamp.now().toMillis() / 1000)
-      })
-      .then(() => setModalStatus(!modalStatus));
+    if (
+      props.item[0].eveKey !== "" &&
+      props.item[0].eveDateKey !== "" &&
+      props.item[0].userKey !== 0
+    ) {
+      firebase
+        .database()
+        .ref(
+          "/responses/" +
+            props.item[0].eveKey +
+            "/" +
+            props.item[0].eveDateKey +
+            "/" +
+            props.item[0].userKey
+        )
+        .set({
+          m: valueMessage,
+          p: sliderValue,
+          t: Math.trunc(firebase.firestore.Timestamp.now().toMillis() / 1000)
+        })
+        .then(() => setModalStatus(!modalStatus));
+    } else {
+      setModalStatus(!modalStatus);
+    }
   };
 
   return (

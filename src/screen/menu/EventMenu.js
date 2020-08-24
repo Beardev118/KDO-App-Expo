@@ -5,7 +5,8 @@ import {
   Switch,
   StyleSheet,
   Dimensions,
-  Platform
+  Platform,
+  TouchableOpacity
 } from "react-native";
 // import Menu, { MenuItem, MenuDivider } from "react-native-material-menu";
 import { IconButton, Colors } from "react-native-paper";
@@ -18,7 +19,7 @@ import {
 } from "react-native-popup-menu";
 import SlideLeftMenu from "./SlideLeftMenu";
 import { EventActiveContext } from "../../globalState/EventActiveState";
-import { EventMuteContext } from "../../globalState/EventMuteState";
+import { AskBeforeTimeContext } from "../../globalState/AskBeforeTimeState";
 import { EventAllMembersContext } from "../../globalState/EventAllMembersState";
 import { from } from "rxjs/observable/from";
 import Constants from "expo-constants";
@@ -49,6 +50,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingVertical: 10,
     paddingHorizontal: 2
+  },
+  btnAskBefore: {
+    width: 44,
+    height: 44,
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  textBtnAskBefore: {
+    textAlign: "center",
+    textAlignVertical: "center",
+    padding: 4,
+    fontSize: 16
   }
 });
 
@@ -61,12 +75,27 @@ function EventMenu(props) {
   const [eventAllMembersStatus, setEventAllMembersStatus] = useContext(
     EventAllMembersContext
   );
-  const [eventMuteStatus, setEventMuteStatus] = useContext(EventMuteContext);
+  const [timeAskBefore, setTimeAskBefore] = useContext(AskBeforeTimeContext);
   const position = { top: 0, left: 0 };
 
   const toggleActiveSwitch = () => setEventActiveStatus(prev => !prev);
-  const toggleMuteSwitch = () => setEventMuteStatus(prev => !prev);
   const toggleAllMembersSwitch = () => setEventAllMembersStatus(prev => !prev);
+
+  const onIncreaseABTime = () => {
+    if (timeAskBefore > 39) {
+      setTimeAskBefore(40);
+    } else {
+      setTimeAskBefore(prev => prev + 1);
+    }
+  };
+
+  const onDecreaseABTime = () => {
+    if (timeAskBefore === 1) {
+      setTimeAskBefore(1);
+    } else {
+      setTimeAskBefore(prev => prev - 1);
+    }
+  };
 
   return (
     <Menu renderer={SlideLeftMenu}>
@@ -107,19 +136,24 @@ function EventMenu(props) {
           </View>
         </MenuOption>
         <MenuOption
-          onSelect={toggleMuteSwitch}
-          //   disabled={true}
+        // onSelect={toggleMuteSwitch}
+        //   disabled={true}
         >
-          <View style={{ flexDirection: "row" }}>
-            <Text style={{ ...styles.optionText, width: 140 }}>askBefore</Text>
-            <Switch
-              trackColor={{ false: "#767577", true: "#81b0ff" }}
-              thumbColor={{ false: "#f5dd4b", true: "#f4f3f4" }}
-              ios_backgroundColor="#3e3e3e"
-              onValueChange={toggleMuteSwitch}
-              value={eventMuteStatus}
-              style={{ marginLeft: 5 }}
-            />
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Text style={{ ...styles.optionText, width: 100 }}>askBefore</Text>
+            <TouchableOpacity
+              style={{ ...styles.btnAskBefore }}
+              onPress={onDecreaseABTime}
+            >
+              <Text style={styles.textBtnAskBefore}>[ - ]</Text>
+            </TouchableOpacity>
+            <Text style={styles.textBtnAskBefore}>{timeAskBefore}</Text>
+            <TouchableOpacity
+              style={styles.btnAskBefore}
+              onPress={onIncreaseABTime}
+            >
+              <Text style={styles.textBtnAskBefore}>[ + ]</Text>
+            </TouchableOpacity>
           </View>
         </MenuOption>
         <MenuOption

@@ -13,7 +13,7 @@ import { MemberState } from "./src/globalState/MemberState";
 import { InactiveState } from "./src/globalState/InactiveState";
 import { EventActiveState } from "./src/globalState/EventActiveState";
 import { EventAllMembersState } from "./src/globalState/EventAllMembersState";
-import { EventMuteState } from "./src/globalState/EventMuteState";
+import { AskBeforeTimeState } from "./src/globalState/AskBeforeTimeState";
 import { InviteNumberState } from "./src/globalState/InviteNumberState";
 
 const uiTheme = {
@@ -44,11 +44,11 @@ export default function App() {
                 <InactiveState>
                   <EventActiveState>
                     <EventAllMembersState>
-                      <EventMuteState>
+                      <AskBeforeTimeState>
                         <InviteNumberState>
                           <AppStart />
                         </InviteNumberState>
-                      </EventMuteState>
+                      </AskBeforeTimeState>
                     </EventAllMembersState>
                   </EventActiveState>
                 </InactiveState>
