@@ -1,4 +1,4 @@
-import React, { useState, createContext } from "react";
+import React, { useState, createContext, useRef } from "react";
 
 export const AskBeforeTimeState = props => {
   const [timeAskBefore, setTimeAskBefore] = useState(1);

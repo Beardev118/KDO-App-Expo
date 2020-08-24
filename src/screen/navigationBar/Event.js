@@ -1,5 +1,5 @@
 import "react-native-gesture-handler";
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import {
   FlatList,
   StyleSheet,
@@ -350,6 +350,8 @@ function Event({ route, navigation }) {
   );
   const [timeAskBefore, setTimeAskBefore] = useContext(AskBeforeTimeContext);
   const [hasUnsavedChange, setHasUnsavedChange] = useState(false);
+  const SRtimeAskBefore = useRef(timeAskBefore);
+  const SReventActiveStatus = useRef(SReventActiveStatus);
 
   const [selectedId, setSelectedId] = useState(null);
   const [members, setMembers] = useState([]);
@@ -505,6 +507,11 @@ function Event({ route, navigation }) {
       };
     })();
   }, [navigation, key]);
+
+  useEffect(() => {
+    SRtimeAskBefore.current = timeAskBefore;
+    SReventActiveStatus.current = eventActiveStatus;
+  }, [timeAskBefore, eventActiveStatus]);
 
   useEffect(() => {
     (async () => {
@@ -688,35 +695,37 @@ function Event({ route, navigation }) {
     let askFlag = 1;
     navigation.addListener("beforeRemove", e => {
       if (askFlag > 2) return;
-      if (askFlag === 1) {
-        // If we don't have unsaved changes, then we don't need to do anything
-        e.preventDefault();
+      if (
+        SRtimeAskBefore.current !== eventAskBefore ||
+        SReventActiveStatus.current !== eventStatus
+      ) {
+        if (askFlag === 1) {
+          // If we don't have unsaved changes, then we don't need to do anything
+          e.preventDefault();
 
-        const SR = timeAskBefore;
-        const SRT = eventActiveStatus;
-
-        firebase.auth().onAuthStateChanged(async user => {
-          if (user != null) {
-            await firebase
-              .firestore()
-              .collection("userGroups")
-              .doc(userGroupId)
-              .collection("events")
-              .doc(key)
-              .collection("notify")
-              .doc(user.uid)
-              .update({
-                active: eventActiveStatus,
-                askBefore: 60 * timeAskBefore
-              })
-              .then(() => {
-                setHasUnsavedChange(true);
-                askFlag += hasUnsavedChange;
-                navigation.goBack();
-                // navigation.navigate("Home");
-              });
-          }
-        });
+          firebase.auth().onAuthStateChanged(async user => {
+            if (user != null) {
+              await firebase
+                .firestore()
+                .collection("userGroups")
+                .doc(userGroupId)
+                .collection("events")
+                .doc(key)
+                .collection("notify")
+                .doc(user.uid)
+                .update({
+                  active: SReventActiveStatus.current,
+                  askBefore: 60 * SRtimeAskBefore.current
+                })
+                .then(() => {
+                  setHasUnsavedChange(true);
+                  askFlag += 1;
+                  navigation.goBack();
+                  // navigation.navigate("Home");
+                });
+            }
+          });
+        }
       }
     });
 

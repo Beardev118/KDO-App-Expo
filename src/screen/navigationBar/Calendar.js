@@ -370,15 +370,10 @@ function Calendar({ route, navigation }) {
               if (querySnapshot.data() !== undefined) {
                 const queryData = querySnapshot.data();
                 if (isSelectedItem !== null) {
-                  console.log(isSelectedItem);
-                  console.log(queryData);
                   if (
                     queryData.active !== isSelectedItem.eventStatus ||
                     queryData.askBefore !== isSelectedItem.eventAskBefore * 60
                   ) {
-                    console.log(queryData.active);
-                    console.log(queryData.askBefore);
-
                     //Calendar Table data
 
                     const inactiveData = [];
@@ -472,7 +467,6 @@ function Calendar({ route, navigation }) {
                     )
                       .then(setUserGroupsResult => {
                         // setIsLoading(false);
-                        console.log("SXXXX::::", userGDatasTemp);
                         setInactiveClasses(inactiveData);
                         setActiveClasses(activeData);
                         setSelectedId(prev => !prev);
@@ -578,7 +572,6 @@ function Calendar({ route, navigation }) {
       firebase.auth().onAuthStateChanged(user => {
         if (user != null) {
           setIsLoading(true);
-          console.log("Start reading from DB:");
           readProfiles();
         } else {
           setIsLoading(false);
